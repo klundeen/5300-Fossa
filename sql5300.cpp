@@ -39,20 +39,40 @@ string columnDefinitionToString(const ColumnDefinition *col) {
 }
 
 /**
+ * Execute an SQL create statement
+ * @param stmt  Hyrise AST for the create statement
+ * @returns     a string of the SQL statment
+ */
+string executeCreate(const CreateStatement *stmt) {
+    string result("CREATE TABLE ");
+    if (stmt->type != CreateStatement::kTable)
+        return result + "...";
+    if (stmt->ifNotExists)
+        result += "IF NOT EXISTS ";
+    result += string(stmt->tableName) + " (";
+    for (ColumnDefinition *col : *stmt->columns) {
+        result += columnDefinitionToString(col);
+        result += ", ";
+    }
+    result = result.substr(0, result.length() - 2);
+    result += ")";
+    return result;
+}
+
+/**
  * Execute an SQL statement (but for now, just spit back the SQL)
  * @param stmt  Hyrise AST for the statement
  * @returns     a string (for now) of the SQL statment
  */
 string execute(const SQLStatement *stmt) {
-  //switch (stmt->type()) {
+  switch (stmt->type()) {
   //      case kStmtSelect:
   //          return executeSelect((const SelectStatement *) stmt);
-  //      case kStmtCreate:
-  //          return executeCreate((const CreateStatement *) stmt);
-  //      default:
-  //          return "Not implemented";
-  //  }
-  return "Not Implemented";
+        case kStmtCreate:
+            return executeCreate((const CreateStatement *) stmt);
+        default:
+            return "Not implemented";
+   }
 }
 
 /**
