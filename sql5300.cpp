@@ -15,6 +15,30 @@ using namespace std;
 using namespace hsql;
 
 /**
+ * Convert the hyrise ColumnDefinition AST back into the equivalent SQL
+ * @param col  column definition to unparse
+ * @return     SQL equivalent to *col
+ */
+string columnDefinitionToString(const ColumnDefinition *col) {
+    string ret(col->name);
+    switch (col->type) {
+        case ColumnDefinition::DOUBLE:
+            ret += " DOUBLE";
+            break;
+        case ColumnDefinition::INT:
+            ret += " INT";
+            break;
+        case ColumnDefinition::TEXT:
+            ret += " TEXT";
+            break;
+        default:
+            ret += " UNKNOWN TYPE";
+            break;
+    }
+    return ret;
+}
+
+/**
  * Execute an SQL statement (but for now, just spit back the SQL)
  * @param stmt  Hyrise AST for the statement
  * @returns     a string (for now) of the SQL statment
