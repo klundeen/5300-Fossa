@@ -209,7 +209,7 @@ string TableRefInfoToString(TableRef* table) {
             break;
         case kTableCrossProduct:
             // for multiple tables in "FROM", delimit in ','
-            int ptr = 1;
+            size_t ptr = 1;
             string delim = ", ";
             for (TableRef* tbl : *table->list) {
                 ret += TableRefInfoToString(tbl);
@@ -232,7 +232,7 @@ string SelectStatementToString(const SelectStatement* stmt) {
     string sqlstmt = "SELECT ";
     
     // for the purpose of join
-    int ptr = 1;
+    size_t ptr = 1;
     string delim = ", ";
     
     for (Expr* expr : *stmt->selectList){
