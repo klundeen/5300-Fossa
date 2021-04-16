@@ -42,23 +42,56 @@ RecordID SlottedPage::add(const Dbt *data) {
 }
 
 Dbt* SlottedPage::get(RecordID record_id) {
-
+  u16 size;
+  u16 loc;
+  get_header(size, loc, record_id);
+  if(loc == 0)
+    return nullptr;
+  return new Dbt(this->address(loc), size);
 }
 
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
-
+  u16 size;
+  u16 loc;
+  get_header(size, loc, record_id);
+  u16 new_size = (u16) data.get_size();
+  if (new_size > size) {
+      u16 extra = new_size - size;
+      if (!this->has_room(extra))
+          throw DbBlockNoRoomError("not enough room to put new record");
+      this->slide(loc, loc - extra);
+      memcpy(this->address(loc - extra), data.get_data(), new_size);
+  } else {
+      memcpy(this->address(loc), data.get_data(), new_size);
+      this->slide(loc + new_size, loc + size);
+  }
+  get_header(size, loc, record_id);
+  put_header(record_id, new_size, loc);
 }
 
 void SlottedPage::del(RecordID record_id) {
-
+  u16 size;
+  u16 loc;
+  get_header(size, loc, record_id);
+  put_header(record_id, 0, 0);
+  this->slide(loc, loc + size);
 }
 
 RecordIDs* SlottedPage::ids(void) {
-
+  RecordIDs *result = new RecordIDs();
+  u16 size;
+  u16 loc;
+  for (u16 i  = 1; i <= this->num_records; i++) {
+    get_header(size, loc, i);
+    if (loc != 0)
+          result->push_back(i);
+  }
+  return result;
 }
 
 void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id = 0) {
-
+  size = get_n((u16)4 * id);
+  loc = get_n((u16)(4 * id + 2));
 }
 
 // Store the size and offset for given id. For id of zero, store the block header.
@@ -72,11 +105,35 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
 }
 
 bool SlottedPage::has_room(u_int16_t size) {
-
+  u16 capacity;
+  capacity = this->end_free -(4 * (this->num_records + 1));
+  return size <= capacity;
 }
 
 void SlottedPage::slide(u_int16_t start, u_int16_t end) {
+  u16 shift = end - start;
+  if (shift == 0){
+          return;
+  }
 
+  //slide data
+  memcpy(this->address(this->end_free + 1 + shift), this->address(this->end_fre$
+
+  //move headers to the right
+  RecordIDs* record_ids = this->ids();
+  for (unsigned int i = 0; i < record_ids->size(); i++) {
+    u16 loc;
+    u16 size;
+    get_header(size, loc, temp->at(i));
+    if (loc <= start) {
+      loc += shift;
+      put_header(temp->at(i), size, loc);
+    }
+  }
+
+  this->end_free += shift;
+  this->put_header();
+  delete record_ids;
 }
 
 // Get 2-byte integer at given offset in block.
