@@ -30,7 +30,7 @@ typedef uint16_t u16;
  *
  */
 
-SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new = false) {
+SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new) : DbBlock(block, block_id, is_new) {
   if (is_new) {
         this->num_records = 0;
         this->end_free = DbBlock::BLOCK_SZ - 1;
@@ -102,7 +102,7 @@ RecordIDs* SlottedPage::ids(void) {
   return result;
 }
 
-void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id = 0) {
+void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id) {
   size = get_n((u16)4 * id);
   loc = get_n((u16)(4 * id + 2));
 }
@@ -130,17 +130,17 @@ void SlottedPage::slide(u_int16_t start, u_int16_t end) {
   }
 
   //slide data
-  memcpy(this->address(this->end_free + 1 + shift), this->address(this->end_fre$
+  memcpy(this->address(this->end_free + 1 + shift), this->address(this->end_free + 1), shift); 
 
   //move headers to the right
   RecordIDs* record_ids = this->ids();
   for (unsigned int i = 0; i < record_ids->size(); i++) {
     u16 loc;
     u16 size;
-    get_header(size, loc, temp->at(i));
+    get_header(size, loc, record_ids->at(i));
     if (loc <= start) {
       loc += shift;
-      put_header(temp->at(i), size, loc);
+      put_header(record_ids->at(i), size, loc);
     }
   }
 
@@ -172,8 +172,6 @@ void* SlottedPage::address(u16 offset) {
         for buffer management and file management.
         Uses SlottedPage for storing records within blocks.
  */
-
-HeapFile::HeapFile(string name) : DbFile(name), dbfilename(""), last(0), closed(true), db(_DB_ENV, 0) {}
          
 void HeapFile::create(void) {
     db_open(DB_CREATE | DB_EXCL);
@@ -183,7 +181,7 @@ void HeapFile::create(void) {
 
 void HeapFile::drop(void) {
     close();
-    Db db(_DB_ENV, 0);
+    // Db db(_DB_ENV, 0);
     db.remove(this->dbfilename.c_str(), nullptr, 0);
 }
 
@@ -226,7 +224,7 @@ void HeapFile::put(DbBlock *block) {
     this->db.put(nullptr, &key, block->get_block(), 0);
 }
 
-BlockIDs *HeapFile::block_ids() const {
+BlockIDs *HeapFile::block_ids() {
     BlockIDs *result = new BlockIDs();
     for (BlockID id = 1; id <= this->last; id++)
         result->push_back(id);
