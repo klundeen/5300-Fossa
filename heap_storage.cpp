@@ -30,6 +30,12 @@ typedef uint16_t u16;
  *
  */
 
+/**
+ * Constructor
+ * @param block
+ * @param block_id
+ * @param is_new
+ */
 SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new) : DbBlock(block, block_id, is_new) {
   if (is_new) {
         this->num_records = 0;
@@ -40,7 +46,10 @@ SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new) : DbBlock(bl
   }
 }
 
-// Add a new record to the block. Return its id.
+/**
+ * Add a new record to the block. Return its id.
+ * @param data
+ */
 RecordID SlottedPage::add(const Dbt *data) {
  if (!has_room(data->get_size()))
         throw DbBlockNoRoomError("not enough room for new record");
@@ -54,6 +63,10 @@ RecordID SlottedPage::add(const Dbt *data) {
     return id;
 }
 
+/**                                                                                                                                          
+ * Get a record from the block                                                                                             
+ * @param record_id                                                                                                                               
+ */
 Dbt* SlottedPage::get(RecordID record_id) {
   u16 size;
   u16 loc;
@@ -63,6 +76,11 @@ Dbt* SlottedPage::get(RecordID record_id) {
   return new Dbt(this->address(loc), size);
 }
 
+/**
+ * Update the record with the given data.
+ * @param record_id
+ * @param data       
+ */
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
   u16 size;
   u16 loc;
@@ -82,6 +100,10 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
   put_header(record_id, new_size, loc);
 }
 
+/**
+ * Delete a record from the page
+ * @param record_id
+ */
 void SlottedPage::del(RecordID record_id) {
   u16 size;
   u16 loc;
@@ -90,6 +112,9 @@ void SlottedPage::del(RecordID record_id) {
   this->slide(loc, loc + size);
 }
 
+/**
+ * Get sequence of all non-deleted record ids.
+ */
 RecordIDs* SlottedPage::ids(void) {
   RecordIDs *result = new RecordIDs();
   u16 size;
@@ -102,12 +127,23 @@ RecordIDs* SlottedPage::ids(void) {
   return result;
 }
 
+/**
+ * Get the size and offset for given id. 
+ * @param size  
+ * @param loc  
+ * @param id    
+ */
 void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id) {
   size = get_n((u16)4 * id);
   loc = get_n((u16)(4 * id + 2));
 }
 
-// Store the size and offset for given id. For id of zero, store the block header.
+/**
+ * Store the size and offset for given id. For id of zero, store the block header.
+ * @param size                                                                                                                               
+ * @param loc                                                                                                                                
+ * @param id 
+ */
 void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
     if (id == 0) { // called the put_header() version and using the default params
         size = this->num_records;
@@ -117,12 +153,21 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
     put_n(4*id + 2, loc);
 }
 
+/**
+ * Check if we have room to store a record with given size. 
+ * @param size  
+ */
 bool SlottedPage::has_room(u_int16_t size) {
   u16 capacity;
   capacity = this->end_free -(4 * (this->num_records + 1));
   return size <= capacity;
 }
 
+/**
+ * Slide the contents to fit for the size of the record.
+ * @param start
+ * @param end   
+ */
 void SlottedPage::slide(u_int16_t start, u_int16_t end) {
   u16 shift = end - start;
   if (shift == 0){
@@ -149,17 +194,27 @@ void SlottedPage::slide(u_int16_t start, u_int16_t end) {
   delete record_ids;
 }
 
-// Get 2-byte integer at given offset in block.
+/**
+ * Get 2-byte integer at given offset in block.
+ * @param offset
+ */
 u16 SlottedPage::get_n(u16 offset) {
     return *(u16*)this->address(offset);
 }
 
-// Put a 2-byte integer at given offset in block.
+/**
+ *Put a 2-byte integer at given offset in block.
+ *@param offset
+ *@param n
+ */
 void SlottedPage::put_n(u16 offset, u16 n) {
     *(u16*)this->address(offset) = n;
 }
 
-// Make a void* pointer for a given offset into the data block.
+/**
+ *Make a void* pointer for a given offset into the data block.
+ *@param offset
+ */
 void* SlottedPage::address(u16 offset) {
     return (void*)((char*)this->block.get_data() + offset);
 }
@@ -172,30 +227,44 @@ void* SlottedPage::address(u16 offset) {
         for buffer management and file management.
         Uses SlottedPage for storing records within blocks.
  */
-         
+
+/**
+ * Create new file
+ */
 void HeapFile::create(void) {
     db_open(DB_CREATE | DB_EXCL);
     SlottedPage *block_page = get_new();
     delete block_page;
 }
 
+/**
+ * Delete file
+ */
 void HeapFile::drop(void) {
     close();
     // Db db(_DB_ENV, 0);
     db.remove(this->dbfilename.c_str(), nullptr, 0);
 }
 
+/**                                                                                                                                          
+ * Open file                                                                                                                               
+ */
 void HeapFile::open(void) {
     db_open();
 }
 
+/**                                                                                                                                          
+ * Close file                                                                                                                               
+ */
 void HeapFile::close(void) {
     this->db.close(0);
     this->closed = true;
 }
 
-// Allocate a new block for the database file.
-// Returns the new empty DbBlock that is managing the records in this block and its block id
+/**
+ * Allocate a new block for the database file.
+ * Returns the new empty DbBlock that is managing the records in this block and its block id
+ */
 SlottedPage *HeapFile::get_new(void) {
     char block[DbBlock::BLOCK_SZ];
     memset(block, 0, sizeof(block));
@@ -211,6 +280,10 @@ SlottedPage *HeapFile::get_new(void) {
     return page;
 }
 
+/**
+ * Get a block from the database
+ * @param block_id
+ */
 SlottedPage *HeapFile::get(BlockID block_id) {
     Dbt key(&block_id, sizeof(block_id));
     Dbt data;
@@ -218,12 +291,19 @@ SlottedPage *HeapFile::get(BlockID block_id) {
     return new SlottedPage(data, block_id, false);
 }
 
+/**                                                                                                                                          
+ * Write a block to the database                                                                                                             
+ * @param block                                                                                                                           
+ */
 void HeapFile::put(DbBlock *block) {
     int block_id = block->get_block_id();
     Dbt key(&block_id, sizeof(block_id));
     this->db.put(nullptr, &key, block->get_block(), 0);
 }
 
+/**
+ * Get sequence of all block ids.
+ */
 BlockIDs *HeapFile::block_ids() {
     BlockIDs *result = new BlockIDs();
     for (BlockID id = 1; id <= this->last; id++)
@@ -231,6 +311,9 @@ BlockIDs *HeapFile::block_ids() {
     return result;
 }
 
+/**
+ * Wrapper for Berkeley DB open, which does both open and creation.
+ */
 void HeapFile::db_open(uint flags) {
 	if (!this->closed) 
 		return;
