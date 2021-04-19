@@ -7,10 +7,22 @@
 //
 
 // include the Berkeley DB
+#include <stdio.h>
+#include <stdlib.h>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <cassert>
+#include "db_cxx.h"
+#include "SQLParser.h"
+#include "sqlhelper.h"
+#include "heap_storage.h"
 #include "sql5300.h"
-#include <db_cxx.h>
 
-
+/*
+ * we allocate and initialize the _DB_ENV global
+ */
+DbEnv *_DB_ENV;
 
 void Sql5300::initialize_db_env(std::string envHome, std::string dbName) {
     
@@ -24,6 +36,7 @@ void Sql5300::initialize_db_env(std::string envHome, std::string dbName) {
     DbEnv env(0U);
     env.set_message_stream(&std::cout);
     env.set_error_stream(&std::cerr);
+    _DB_ENV = &env;
     env.open(envdir.c_str(), DB_CREATE | DB_INIT_MPOOL, 0);
     
     Db db(&env, 0);
@@ -342,7 +355,10 @@ int main(int argc, const char * argv[]) {
         if (query == QUIT) {
             break;
         }
-        
+        if (query == "test") {
+            cout << "test_heap_storage: " << (test_heap_storage() ? "ok" : "failed") << endl;
+            continue;
+        }
         sql5300.execute(query);
     }
     

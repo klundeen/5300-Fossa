@@ -234,6 +234,8 @@ void* SlottedPage::address(u16 offset) {
         Uses SlottedPage for storing records within blocks.
  */
 
+//HeapFile::HeapFile(string name) : DbFile(name), dbfilename(""), last(0), closed(true), db(_DB_ENV, 0) {}
+
 /**
  * Create new file
  */
@@ -248,7 +250,7 @@ void HeapFile::create(void) {
  */
 void HeapFile::drop(void) {
     close();
-    //Db db(_DB_ENV, 0);
+    Db db(_DB_ENV, 0);
     db.remove(this->dbfilename.c_str(), nullptr, 0);
 }
 
@@ -325,13 +327,15 @@ void HeapFile::db_open(uint flags) {
 		return;
 
 	this->db.set_re_len(DbBlock::BLOCK_SZ);
-    // get the correct name for db
-    // need to test here to make sure it work
-    this->dbfilename = "./" + this->name + ".db";
-	this->db.open(nullptr, (this->dbfilename).c_str(), nullptr, DB_RECNO, flags, 0644);
-	DB_BTREE_STAT *stat;
-	this->db.stat(nullptr, &stat, DB_FAST_STAT);
-	this->last = flags ? 0 : stat->bt_ndata;
+    this->dbfilename = this->name + ".db";
+    this->db.open(nullptr, (this->dbfilename).c_str(), nullptr, DB_RECNO, flags, 0644);
+	if (flags == 0) {
+        DB_BTREE_STAT stat;
+        this->db.stat(nullptr, &stat, DB_FAST_STAT);
+        this->last = stat.bt_ndata;
+    } else {
+        this->last = 0;
+    }
 	this->closed = false;
 }
 
@@ -610,7 +614,7 @@ bool test_heap_storage(){
     std::cout << "drop ok" << std::endl;
     HeapTable table("_test_data_cpp", column_names, column_attributes);
     table.create_if_not_exists();
-    std::cout << "create_if_not_exsts ok" << std::endl;
+    std::cout << "create_if_not_exists ok" << std::endl;
     
     ValueDict row;
     row["a"] = Value(12);
