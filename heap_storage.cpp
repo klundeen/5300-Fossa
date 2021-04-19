@@ -247,7 +247,7 @@ void HeapFile::create(void) {
  */
 void HeapFile::drop(void) {
     close();
-    // Db db(_DB_ENV, 0);
+    Db db(_DB_ENV, 0);
     db.remove(this->dbfilename.c_str(), nullptr, 0);
 }
 
@@ -326,7 +326,7 @@ void HeapFile::db_open(uint flags) {
 	this->db.set_re_len(DbBlock::BLOCK_SZ);
     // get the correct name for db
     // need to test here to make sure it work
-	this->dbfilename = this->name + ".db";
+    this->dbfilename = "./" + this->name + ".db";
 	this->db.open(nullptr, (this->dbfilename).c_str(), nullptr, DB_RECNO, flags, 0644);
 	DB_BTREE_STAT *stat;
 	this->db.stat(nullptr, &stat, DB_FAST_STAT);
@@ -334,8 +334,8 @@ void HeapFile::db_open(uint flags) {
 	this->closed = false;
 }
 
-HeapTable::HeapTable(Identifier table_name, ColumnNames column_names, ColumnAttributes column_attributes) : DbRelation(table_name, column_names, column_attributes){
-    this->file = new HeapFile(table_name);
+HeapTable::HeapTable(Identifier table_name, ColumnNames column_names, ColumnAttributes column_attributes) : DbRelation(table_name, column_names, column_attributes), file(table_name){
+  //this->file = HeapFile(table_name);
 }
 
 // return the bits to go into the file
@@ -500,6 +500,25 @@ Handle HeapTable::insert(const ValueDict *row){
     return this->append(this->validate(row));
 };
 
+void HeapTable::update(const Handle handle, const ValueDict* new_values) {
+	throw DbRelationError("Not Implemented");
+}
+
+Handles* HeapTable::select() {
+	Handles* handles = new Handles();
+	BlockIDs* block_ids = file.block_ids();
+	for (auto const& block_id : *block_ids) {
+		SlottedPage* block = file.get(block_id);
+		RecordIDs* record_ids = block->ids();
+		for (auto const& record_id : *record_ids)
+			handles->push_back(Handle(block_id, record_id));
+		delete record_ids;
+		delete block;
+	}
+	delete block_ids;
+	return handles;
+}
+
 Handles* HeapTable::select(const ValueDict* where) {
     Handles* handles = new Handles();
     BlockIDs* block_ids = file.block_ids();
@@ -529,6 +548,18 @@ void HeapTable::del(const Handle handle){
     block->del(record_id);
     this->file.put(block);
 };
+
+ValueDict* HeapTable::project(Handle handle) {
+	this->open();
+	BlockID block_id = handle.first;
+	RecordID record_id = handle.second;
+	SlottedPage* block = this->file.get(block_id);
+	Dbt* data = block->get(record_id);
+	ValueDict* row = this->unmarshal(data);
+	delete data;
+	delete block;
+	return row;
+}
 
 ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
     

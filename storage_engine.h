@@ -18,7 +18,7 @@
 /**
  * Global variable to hold dbenv.
  */
-extern DbEnv *_DB_ENV;
+extern DbEnv* _DB_ENV;
 
 /*
  * Convenient aliases for types
