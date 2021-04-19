@@ -9,6 +9,7 @@
  */
 
 #include "heap_storage.h"
+#include "storage_engine.h"
 #include "db_cxx.h"
 #include <cstring>
 
@@ -247,7 +248,7 @@ void HeapFile::create(void) {
  */
 void HeapFile::drop(void) {
     close();
-    Db db(_DB_ENV, 0);
+    //Db db(_DB_ENV, 0);
     db.remove(this->dbfilename.c_str(), nullptr, 0);
 }
 
