@@ -411,7 +411,7 @@ ValueDict *HeapTable::unmarshal(Dbt *data) {
             }
         }
 
-    };
+    }
 
 }
 
@@ -467,8 +467,7 @@ void HeapTable::create_if_not_exists(){
      *****/
     try {
         this->file.open();
-    }catch (int e) {
-        cout << "Debug: An exception occurred. Exception Nr. " << e << '\n';
+    }catch (...) {
         this->file.create();
     }
     
@@ -585,9 +584,9 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
     } else {
         //FIXME
         //return {k: row[k] for k in column_names}
+        return row;
     }
-
-};
+}
 
 bool fileExists(const std::string& filename){
     struct stat buf;
@@ -620,6 +619,9 @@ bool test_heap_storage(){
     row["a"] = Value(12);
     row["b"] = Value("Hello!");
     std::cout << "try insert" << std::endl;
+    
+    std::cout << "debug: *********" << std::endl;
+
     table.insert(&row);
     std::cout << "insert ok" << std::endl;
     Handles *handles = table.select();
