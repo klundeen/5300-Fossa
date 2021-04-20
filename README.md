@@ -31,6 +31,3 @@ make clean
 make
 ./sql5300 ~/cpsc5300/data
 ```
-
-
-
