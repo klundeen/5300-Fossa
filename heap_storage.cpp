@@ -12,6 +12,8 @@
 #include "storage_engine.h"
 #include "db_cxx.h"
 #include <cstring>
+#include <iostream>
+#include <string>
 
 // asertion test
 #include <cassert>
@@ -20,6 +22,7 @@
 
 using namespace std;
 typedef uint16_t u16;
+typedef u_int32_t u32;
 
 /**
  * @class SlottedPage - heap file implementation of DbBlock.
@@ -242,7 +245,8 @@ void* SlottedPage::address(u16 offset) {
 void HeapFile::create(void) {
     db_open(DB_CREATE | DB_EXCL);
     SlottedPage *block_page = get_new();
-    delete block_page;
+    //delete block_page;
+    this->put(block_page);
 }
 
 /**
@@ -325,7 +329,6 @@ BlockIDs *HeapFile::block_ids() {
 void HeapFile::db_open(uint flags) {
 	if (!this->closed) 
 		return;
-
 	this->db.set_re_len(DbBlock::BLOCK_SZ);
     this->dbfilename = this->name + ".db";
     this->db.open(nullptr, (this->dbfilename).c_str(), nullptr, DB_RECNO, flags, 0644);
@@ -350,7 +353,7 @@ Dbt* HeapTable::marshal(const ValueDict* row) {
     uint offset = 0;
     uint col_num = 0;
     for (auto const& column_name: this->column_names) {
-        ColumnAttribute ca = this->column_attributes[col_num++];
+      ColumnAttribute ca = this->column_attributes[col_num++];
         ValueDict::const_iterator column = row->find(column_name);
         Value value = column->second;
         if (ca.get_data_type() == ColumnAttribute::DataType::INT) {
@@ -369,6 +372,7 @@ Dbt* HeapTable::marshal(const ValueDict* row) {
     char *right_size_bytes = new char[offset];
     memcpy(right_size_bytes, bytes, offset);
     delete[] bytes;
+    cout << "get here" << endl;
     Dbt *data = new Dbt(right_size_bytes, offset);
     return data;
 }                                                                                                     
@@ -412,18 +416,15 @@ ValueDict *HeapTable::unmarshal(Dbt *data) {
         }
 
     }
-
 }
 
 Handle HeapTable::append(const ValueDict *row){
     /*****
      Assumes row is fully fleshed-out. Appends a record to the file.
      *****/
-
     Dbt *data = this->marshal(row);
     SlottedPage *block = this->file.get(this->file.get_last_block_id());
     RecordID record_id;
-    
     try {
         record_id = block->add(data);
     } catch (DbRelationError) {
@@ -439,16 +440,18 @@ ValueDict *HeapTable::validate(const ValueDict *row){
      Check if the given row is acceptable to insert. Raise ValueError if not.
      Otherwise return the full row dictionary.
      *****/
-    ValueDict *full_row;
-    uint col_num = 0;
+  ValueDict *full_row = new ValueDict();
 
     for (auto const& column_name: this->column_names) {
-        ColumnAttribute ca = this->column_attributes[col_num++];
-        
-            ValueDict::const_iterator column = row->find(column_name);
-            Value value = column->second;
+        Value value;
+        ValueDict::const_iterator column = row->find(column_name);
+        if (column == row->end())
+            throw DbRelationError("Not Handle");
+        else {
+            value = column->second;
+            (*full_row)[column_name] = value;
+        }
     }
-    
     return full_row;
 };
 
@@ -614,7 +617,7 @@ bool test_heap_storage(){
     HeapTable table("_test_data_cpp", column_names, column_attributes);
     table.create_if_not_exists();
     std::cout << "create_if_not_exists ok" << std::endl;
-    
+
     ValueDict row;
     row["a"] = Value(12);
     row["b"] = Value("Hello!");
