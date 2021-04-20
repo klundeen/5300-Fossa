@@ -380,42 +380,40 @@ Dbt* HeapTable::marshal(const ValueDict* row) {
 
 ValueDict *HeapTable::unmarshal(Dbt *data) {
     
-//def from_bytes(ofs, sz, signed=False):
-//            return int.from_bytes(data[ofs:ofs+sz], BYTE_ORDER, signed=signed)
-
-    ValueDict *row;
+    ValueDict* retRow = new ValueDict();
     uint offset = 0;
     uint col_num = 0;
-
     for (auto const& column_name: this->column_names) {
         ColumnAttribute ca = this->column_attributes[col_num++];
-        ValueDict::const_iterator column = row->find(column_name);
-        //value in bytes
-        Value bytes = column->second;
-        
-        switch (ca.get_data_type()) {
-            case ColumnAttribute::DataType::INT:{
-                //convert bytes to int
-                //int32_t value;
-                //memcpy(&value, bytes, sizeof(int32_t));
-                //offset += sizeof(int32_t);
-                break;
-            }
-            case ColumnAttribute::DataType::TEXT:{
-                //u16 sz = bytes.s.length();
-                //offset += sizeof(u16);
-                //string value(bytes, sizeof(bytes));
-                //memcpy(&bytes+offset, value, sz); // assume ascii for now
-                //offset += sz;
-                break;
-            }
-            default: {
-                throw DbRelationError("Only know how to unmarshal INT and TEXT");
-                break;
-            }
+        string* dataString = (string*)(data->get_data());
+        if (ca.get_data_type() == ColumnAttribute::DataType::INT) {
+            string subDataString = dataString->substr(offset, offset + sizeof(int32_t)); // from offset => offset + sizeof(int32_t);
+            const void* subDataPointer = &subDataString;
+            cout << subDataString;
+            int v;
+            memcpy(&v, subDataPointer, sizeof(int32_t));
+            Value* val = new Value(v);
+            retRow->insert(pair<Identifier , Value>(column_name, *val));
+        } else if (ca.get_data_type() == ColumnAttribute::DataType::TEXT) {
+            string sizeDataString = dataString->substr(offset, offset + sizeof(u_int16_t)); // Make Constant for 2
+            const void* sizeDataPointer = &sizeDataString;
+            int size;
+            memcpy(&size, sizeDataPointer, sizeof(u_int16_t));
+            offset += 2;
+            string subDataString = dataString->substr(offset, offset + size);
+            const void* subDataPointer = &subDataString;
+            cout << subDataString;
+            char* v;
+            memcpy(&v, subDataPointer, size);
+            offset += size;
+            Value* val = new Value(v);
+            retRow->insert(pair<Identifier , Value>(column_name, *val));
+        } else {
+            throw DbRelationError("Only know how to marshal INT and TEXT");
         }
-
     }
+    return retRow;
+
 }
 
 Handle HeapTable::append(const ValueDict *row){
