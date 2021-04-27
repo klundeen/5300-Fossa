@@ -228,7 +228,7 @@ string executeCreate(const CreateStatement *stmt) {
             ret += ", ";
         column_name = columnDefinitionToString(col);
         ret += (string)column_name;
-        column_names.push_back(column_name);
+        column_names->push_back(column_name);
         doComma = true;
     }
     ret += ")";
