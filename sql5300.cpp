@@ -178,6 +178,25 @@ string columnDefinitionToString(const ColumnDefinition *col) {
     return ret;
 }
 
+
+/**
+ * Convert the hyrise ColumnDefinition AST to collumn attribute type
+ * @param col  column definition to unparse
+ * @return     collumn attribute
+ */
+ColumnAttribute columnDefinitionToColumnAttribute(const ColumnDefinition *col) {
+    switch (col->type) {
+        case ColumnDefinition::DOUBLE:
+            return ColumnAttribute ret(ColumnAttribute::DOUBLE);
+        case ColumnDefinition::INT:
+            return ColumnAttribute ret(ColumnAttribute::INT);
+        case ColumnDefinition::TEXT:
+            return ColumnAttribute ret(ColumnAttribute::TEXT);
+        default:
+            return NULL;
+    }
+}
+
 /**
  * Execute an SQL select statement (but for now, just spit back the SQL)
  * @param stmt  Hyrise AST for the select statement
