@@ -437,24 +437,23 @@ Handle HeapTable::append(const ValueDict *row){
     return Handle(this->file.get_last_block_id(), record_id);
 };
 
-ValueDict *HeapTable::validate(const ValueDict *row){
+ValueDict* HeapTable::validate(const ValueDict* row){
     /*****
      Check if the given row is acceptable to insert. Raise ValueError if not.
      Otherwise return the full row dictionary.
      *****/
-  ValueDict *full_row = new ValueDict();
-
-    for (auto const& column_name: this->column_names) {
-        Value value;
-        ValueDict::const_iterator column = row->find(column_name);
-        if (column == row->end())
-            throw DbRelationError("Not Handle");
-        else {
-            value = column->second;
-            (*full_row)[column_name] = value;
+	ValueDict* full_row = new ValueDict();
+    	for (auto const& column_name: this->column_names) {
+        	Value value;
+        	ValueDict::const_iterator column = row->find(column_name);
+        	if (column == row->end()) {
+            		throw DbRelationError("Not Handle");
+		} else {
+            		value = column->second;
+		}
+                (*full_row)[column_name] = value;
         }
-    }
-    return full_row;
+        return full_row;
 };
 
 void HeapTable::create(){
