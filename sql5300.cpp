@@ -221,13 +221,13 @@ string executeCreate(const CreateStatement *stmt) {
     ret += string(stmt->tableName) + " (";
     bool doComma = false;
     
-    ColumnNames column_names = new ColumnNames();
+    ColumnNames* column_names = new ColumnNames();
     Identifier column_name;
     for (ColumnDefinition *col : *stmt->columns) {
         if (doComma)
             ret += ", ";
         column_name = columnDefinitionToString(col);
-        ret += (String)column_name;
+        ret += (string)column_name;
         column_names.push_back(column_name);
         doComma = true;
     }
