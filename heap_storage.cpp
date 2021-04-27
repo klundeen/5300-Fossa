@@ -380,41 +380,31 @@ Dbt* HeapTable::marshal(const ValueDict* row) {
 
 
 ValueDict *HeapTable::unmarshal(Dbt *data) {
-    
-    ValueDict* retRow = new ValueDict();
+    ValueDict *row = new ValueDict();
+    Value value;
+    char *bytes = (char *) data->get_data();
     uint offset = 0;
     uint col_num = 0;
-    for (auto const& column_name: this->column_names) {
+    for (auto const &column_name: this->column_names) {
         ColumnAttribute ca = this->column_attributes[col_num++];
-        string* dataString = (string*)(data->get_data());
-        if (ca.get_data_type() == ColumnAttribute::DataType::INT) {
-            string subDataString = dataString->substr(offset, offset + sizeof(int32_t)); // from offset => offset + sizeof(int32_t);
-            const void* subDataPointer = &subDataString;
-            cout << subDataString;
-            int v;
-            memcpy(&v, subDataPointer, sizeof(int32_t));
-            Value* val = new Value(v);
-            retRow->insert(pair<Identifier , Value>(column_name, *val));
-        } else if (ca.get_data_type() == ColumnAttribute::DataType::TEXT) {
-            string sizeDataString = dataString->substr(offset, offset + sizeof(u_int16_t)); // Make Constant for 2
-            const void* sizeDataPointer = &sizeDataString;
-            int size;
-            memcpy(&size, sizeDataPointer, sizeof(u_int16_t));
-            offset += 2;
-            string subDataString = dataString->substr(offset, offset + size);
-            const void* subDataPointer = &subDataString;
-            cout << subDataString;
-            char* v;
-            memcpy(&v, subDataPointer, size);
+        value.data_type = ca.get_data_type();
+        if (value.data_type == ColumnAttribute::DataType::INT) {
+            value.n = *(int32_t *) (bytes + offset);
+            offset += sizeof(int32_t);
+        } else if (value.data_type == ColumnAttribute::DataType::TEXT) {
+            u16 size = *(u16 *) (bytes + offset);
+            offset += sizeof(u16);
+            char buffer[DbBlock::BLOCK_SZ];
+            memcpy(buffer, bytes + offset, size);
+            buffer[size] = '\0';
+            value.s = string(buffer);  // assume ascii for now
             offset += size;
-            Value* val = new Value(v);
-            retRow->insert(pair<Identifier , Value>(column_name, *val));
         } else {
-            throw DbRelationError("Only know how to marshal INT and TEXT");
+            throw DbRelationError("Only know how to unmarshal INT and TEXT");
         }
+        (*row)[column_name] = value;
     }
-    return retRow;
-
+    return row;
 }
 
 Handle HeapTable::append(const ValueDict *row){
