@@ -241,13 +241,15 @@ string executeCreate(const CreateStatement *stmt) {
     bool doComma = false;
     
     ColumnNames* column_names = new ColumnNames();
-    Identifier column_name;
+    ColumnAttributes* column_attributes = new ColumnAttributes();
     for (ColumnDefinition *col : *stmt->columns) {
         if (doComma)
             ret += ", ";
-        column_name = columnDefinitionToString(col);
+        Identifier column_name = columnDefinitionToString(col);
+        ColumnAttribute column_attribute = columnDefinitionToColumnAttribute(col)
         ret += (string)column_name;
         column_names->push_back(column_name);
+        column_attributes->push_back(column_attribute);
         doComma = true;
     }
     ret += ")";
