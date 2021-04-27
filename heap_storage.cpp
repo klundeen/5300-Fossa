@@ -570,10 +570,14 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
      Return a sequence of values for handle given by column_names.
      *****/
     BlockID block_id = handle.first;
+    cout << "Here 1" << endl;
     RecordID record_id = handle.second;
-    
+    cout << "Here 2" << endl;
+	
     SlottedPage *block = this->file.get(block_id);
+    cout << "Here 3" << endl;
     Dbt *data = block->get(record_id);
+    cout << "Here 4" << endl;
     ValueDict *row = this->unmarshal(data);
     
     delete data;
