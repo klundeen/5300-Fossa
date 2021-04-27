@@ -583,6 +583,7 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
     delete data;
     delete block;	
 	
+    cout << "Here 5" << endl;
     if (column_names->empty()) 
         return row;
     ValueDict *result = new ValueDict();
