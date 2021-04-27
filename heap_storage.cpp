@@ -327,19 +327,20 @@ BlockIDs *HeapFile::block_ids() {
  * Wrapper for Berkeley DB open, which does both open and creation.
  */
 void HeapFile::db_open(uint flags) {
-	if (!this->closed) 
-		return;
-	this->db.set_re_len(DbBlock::BLOCK_SZ);
+    if (!this->closed) 
+	return;
+    this->db.set_re_len(DbBlock::BLOCK_SZ);
     this->dbfilename = this->name + ".db";
-    this->db.open(nullptr, (this->dbfilename).c_str(), nullptr, DB_RECNO, flags, 0644);
-	if (flags == 0) {
+    this->db.open(nullptr, this->dbfilename.c_str(), nullptr, DB_RECNO, flags, 0644);
+	
+    if (flags == 0) {
         DB_BTREE_STAT stat;
         this->db.stat(nullptr, &stat, DB_FAST_STAT);
         this->last = stat.bt_ndata;
     } else {
         this->last = 0;
     }
-	this->closed = false;
+    this->closed = false;
 }
 
 HeapTable::HeapTable(Identifier table_name, ColumnNames column_names, ColumnAttributes column_attributes) : DbRelation(table_name, column_names, column_attributes), file(table_name){
