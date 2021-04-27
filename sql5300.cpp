@@ -245,7 +245,8 @@ string executeCreate(const CreateStatement *stmt) {
         return ret + "...";
     if (stmt->ifNotExists)
         ret += "IF NOT EXISTS ";
-    ret += string(stmt->tableName) + " (";
+    string table_name = string(stmt->tableName)
+    ret += table_name + " (";
     bool doComma = false;
     
     ColumnNames* column_names = new ColumnNames();
@@ -260,6 +261,9 @@ string executeCreate(const CreateStatement *stmt) {
         column_attributes->push_back(column_attribute);
         doComma = true;
     }
+    HeapTable table(table_name, column_names, column_attributes);
+    table.create();
+    cout << "Table: " + table_name + " created." << endl;
     ret += ")";
     return ret;
 }
