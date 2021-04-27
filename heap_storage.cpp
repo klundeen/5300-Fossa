@@ -504,8 +504,11 @@ Handle HeapTable::insert(const ValueDict *row){
      Execute: INSERT INTO <table_name> (<row_keys>) VALUES (<row_values>)
      Return the handle of the inserted row.
      *****/
-    this->file.open();
-    return this->append(this->validate(row));
+    open();
+    ValueDict* full_row = validate(row);
+    Handle handle = append(full_row);
+    delete full_row;	
+    return handle;
 };
 
 void HeapTable::update(const Handle handle, const ValueDict* new_values) {
