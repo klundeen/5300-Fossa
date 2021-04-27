@@ -263,7 +263,7 @@ string executeCreate(const CreateStatement *stmt) {
     }
     HeapTable table(table_name, *column_names, *column_attributes);
     table.create();
-    cout << "Table: " + table_name + " created." << endl;
+    cout << "Table <" + table_name + "> created." << endl;
     ret += ")";
     return ret;
 }
