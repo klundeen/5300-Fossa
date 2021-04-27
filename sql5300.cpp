@@ -187,13 +187,17 @@ string columnDefinitionToString(const ColumnDefinition *col) {
 ColumnAttribute columnDefinitionToColumnAttribute(const ColumnDefinition *col) {
     switch (col->type) {
         case ColumnDefinition::DOUBLE:
-            return ColumnAttribute ret(ColumnAttribute::DOUBLE);
+            ColumnAttribute ret(ColumnAttribute::DOUBLE);
+            return ret;
         case ColumnDefinition::INT:
-            return ColumnAttribute ret(ColumnAttribute::INT);
+            ColumnAttribute ret(ColumnAttribute::INT);
+            return ret;
         case ColumnDefinition::TEXT:
-            return ColumnAttribute ret(ColumnAttribute::TEXT);
+            ColumnAttribute ret(ColumnAttribute::TEXT);
+            return ret;
         default:
-            return NULL;
+            ColumnAttribute ret(ColumnAttribute::UNKNOWN);
+            return ;
     }
 }
 
