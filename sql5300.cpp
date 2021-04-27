@@ -186,18 +186,22 @@ string columnDefinitionToString(const ColumnDefinition *col) {
  */
 ColumnAttribute columnDefinitionToColumnAttribute(const ColumnDefinition *col) {
     switch (col->type) {
-        case ColumnDefinition::DOUBLE:
+        case ColumnDefinition::DOUBLE: {
             ColumnAttribute ret(ColumnAttribute::DOUBLE);
             return ret;
-        case ColumnDefinition::INT:
+        }
+        case ColumnDefinition::INT: {
             ColumnAttribute ret(ColumnAttribute::INT);
             return ret;
-        case ColumnDefinition::TEXT:
+        }
+        case ColumnDefinition::TEXT: {
             ColumnAttribute ret(ColumnAttribute::TEXT);
             return ret;
-        default:
+        }
+        default: {
             ColumnAttribute ret(ColumnAttribute::UNKNOWN);
             return ;
+        }
     }
 }
 
@@ -250,7 +254,7 @@ string executeCreate(const CreateStatement *stmt) {
         if (doComma)
             ret += ", ";
         Identifier column_name = columnDefinitionToString(col);
-        ColumnAttribute column_attribute = columnDefinitionToColumnAttribute(col)
+        ColumnAttribute column_attribute = columnDefinitionToColumnAttribute(col);
         ret += (string)column_name;
         column_names->push_back(column_name);
         column_attributes->push_back(column_attribute);
