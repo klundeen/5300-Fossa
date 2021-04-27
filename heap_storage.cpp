@@ -561,15 +561,7 @@ void HeapTable::del(const Handle handle){
 };
 
 ValueDict* HeapTable::project(Handle handle) {
-	this->open();
-	BlockID block_id = handle.first;
-	RecordID record_id = handle.second;
-	SlottedPage* block = this->file.get(block_id);
-	Dbt* data = block->get(record_id);
-	ValueDict* row = this->unmarshal(data);
-	delete data;
-	delete block;
-	return row;
+	return project(handle, &this->column_names);
 }
 
 ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
@@ -587,7 +579,7 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
     delete data;
     delete block;	
 	
-    if (column_names->empty()) {
+    if (column_names->empty()) 
         return row;
     ValueDict *result = new ValueDict();
     for (auto const &column_name: *column_names)
