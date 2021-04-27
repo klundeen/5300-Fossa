@@ -200,7 +200,7 @@ ColumnAttribute columnDefinitionToColumnAttribute(const ColumnDefinition *col) {
         }
         default: {
             ColumnAttribute ret(ColumnAttribute::UNKNOWN);
-            return ;
+            return ret;
         }
     }
 }
