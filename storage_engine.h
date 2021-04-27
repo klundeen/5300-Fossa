@@ -200,7 +200,7 @@ protected:
 class ColumnAttribute {
 public:
     enum DataType {
-        INT, TEXT
+        INT, TEXT, DOUBLE, UNKNOWN
     };
 
     ColumnAttribute(DataType data_type) : data_type(data_type) {}
