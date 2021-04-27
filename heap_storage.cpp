@@ -577,8 +577,6 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
     /*****
      Return a sequence of values for handle given by column_names.
      *****/
-
-    this->open();
     BlockID block_id = handle.first;
     RecordID record_id = handle.second;
     
@@ -586,13 +584,16 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names){
     Dbt *data = block->get(record_id);
     ValueDict *row = this->unmarshal(data);
     
-    if (column_names == NULL) {
+    delete data;
+    delete block;	
+	
+    if (column_names->empty()) {
         return row;
-    } else {
-        //FIXME
-        //return {k: row[k] for k in column_names}
-        return row;
-    }
+    ValueDict *result = new ValueDict();
+    for (auto const &column_name: *column_names)
+    	(*result)[column_name] = (*row)[column_name];
+    delete row;
+    return result;
 }
 
 bool fileExists(const std::string& filename){
