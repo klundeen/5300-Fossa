@@ -15,3 +15,4 @@ rm -rf ~/cpsc5300/data/*
 cd ~/cpsc5300/5300-Fossa
 git checkout tags/Milestone2
 make clean
+```
