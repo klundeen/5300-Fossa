@@ -11,6 +11,7 @@ make clean
 ### to run Milestone2:
 
 ```
+### to run Milestone2:
 ```
 rm -rf ~/cpsc5300/data/*
 cd ~/cpsc5300/5300-Fossa
