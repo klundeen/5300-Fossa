@@ -92,16 +92,18 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
 
     try {
         // Update _columns Schema
+        /**
         for (ColumnDefinition *col : *statement->columns) {
             ValueDict *column_entry = new ValueDict();
             Value val_table_name = Value(table_name);
             Value val_column_name = string(col->name);
-            Value val_data_type = sting(if(col->type == ColumnDefinition::TEXT)? "TEXT" : "INT");
+            Value val_data_type = string((col->type == ColumnDefinition::TEXT)? "TEXT" : "INT");
             (*column_entry)["table_name"] = val_table_name;
             (*column_entry)["column_name"] = val_column_name;
             (*column_entry)["data_type"] = val_data_type;
             tables->columns_table->insert(column_entry); // May Throw DbRelationError
         }
+        **/
         // Update _columns Schema
         ColumnAttributes* column_attributes = new ColumnAttributes();
         ColumnNames *column_names = new ColumnNames();
