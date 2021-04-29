@@ -90,15 +90,15 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
-        HeapTable *table = HeapTable(table_name, column_names,
-                                     column_attributes);
+        HeapTable *table = HeapTable(table_name, *column_names,
+                                     *column_attributes);
         if (statement->ifNotExists) {
-            table->create_if_not_exists()
+            table->create_if_not_exists();
         } else {
             table->create();
         }
     } catch (DbRelationError) {
-        tables->del(table->select(table_entry));
+        tables->del(tables->select(table_entry));
     }
     return new QueryResult("Created" + table_name); // FIXME
 }
