@@ -72,13 +72,16 @@ SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name,
 }
 
 QueryResult *SQLExec::create(const CreateStatement *statement) {
-    if (statement->type != CreateStatement::kTable) {
+    if (statement->type != CreateStatement::kTable)
         throw SQLExecError("CREATE Statement Not recognized");
-    } else {
-        string table_name = string(statement->tableName);
-        ValueDict* table_entry = new ValueDict();
-        table_entry[] =
-        tables->insert()
+
+    string table_name = string(statement->tableName);
+    ValueDict *table_entry = new ValueDict();
+    Value val_table_name = Value(table_name);
+    table_entry["table_name"] = val_table_name;
+    tables->insert(table_entry); // May Throw DbRelationError
+
+    try {
         ColumnAttributes *column_attributes = new ColumnAttribute();
         ColumnNames *column_names = new ColumnNames();
         for (ColumnDefinition *col : *stmt->columns) {
@@ -87,10 +90,17 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
-        if (statement->ifNotExists)
-            ret += "IF NOT EXISTS ";
+        HeapTable *table = HeapTable(table_name, column_names,
+                                     column_attributes);
+        if (statement->ifNotExists) {
+            table->create_if_not_exists()
+        } else {
+            table->create();
+        }
+    } catch (DbRelationError) {
+        tables->del(table->select(table_entry));
     }
-    return new QueryResult("not implemented"); // FIXME
+    return new QueryResult("Created" + table_name); // FIXME
 }
 
 // DROP ...
