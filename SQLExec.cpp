@@ -78,19 +78,19 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
     string table_name = string(statement->tableName);
     ValueDict *table_entry = new ValueDict();
     Value val_table_name = Value(table_name);
-    table_entry["table_name"] = val_table_name;
+    *table_entry["table_name"] = *val_table_name;
     tables->insert(table_entry); // May Throw DbRelationError
 
     try {
-        ColumnAttributes *column_attributes = new ColumnAttribute();
+        ColumnAttributes* column_attributes = new ColumnAttributes();
         ColumnNames *column_names = new ColumnNames();
-        for (ColumnDefinition *col : *stmt->columns) {
+        for (ColumnDefinition *col : *statement->columns) {
             string column_name = string(col->name);
-            ColumnAttribute column_attribute = ColumnAttribute(col->type);
+            ColumnAttribute column_attribute = new ColumnAttribute(col->type);
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
-        HeapTable *table = HeapTable(table_name, *column_names,
+        HeapTable *table = new HeapTable(table_name, *column_names,
                                      *column_attributes);
         if (statement->ifNotExists) {
             table->create_if_not_exists();
@@ -98,7 +98,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             table->create();
         }
     } catch (DbRelationError) {
-        tables->del(tables->select(table_entry));
+        tables->del(*tables->select(table_entry));
     }
     return new QueryResult("Created" + table_name); // FIXME
 }
