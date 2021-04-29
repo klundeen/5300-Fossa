@@ -69,7 +69,14 @@ QueryResult *SQLExec::execute(const SQLStatement *statement) {
 void
 SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name, ColumnAttribute &column_attribute) {
     column_name = string(col->name);
-    column_attribute = new ColumnAttribute(col->type);
+    switch (col->type) {
+        case INT:
+            column_attribute = new ColumnAttribute(ColumnAttribute::INT);
+        case TEXT:
+            column_attribute = new ColumnAttribute(ColumnAttribute::TEXT);
+        default:
+            throw SQLExecError("Column Datatype not supported");
+    }
 }
 
 QueryResult *SQLExec::create(const CreateStatement *statement) {
