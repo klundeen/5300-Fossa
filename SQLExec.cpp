@@ -68,8 +68,8 @@ QueryResult *SQLExec::execute(const SQLStatement *statement) {
 
 void
 SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name, ColumnAttribute &column_attribute) {
-    *column_name = string(col->name);
-    *column_attribute = new ColumnAttribute(col->type);
+    column_name = string(col->name);
+    column_attribute = new ColumnAttribute(col->type);
 }
 
 QueryResult *SQLExec::create(const CreateStatement *statement) {
