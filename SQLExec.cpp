@@ -68,7 +68,8 @@ QueryResult *SQLExec::execute(const SQLStatement *statement) {
 
 void
 SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name, ColumnAttribute &column_attribute) {
-    throw SQLExecError("not implemented");  // FIXME
+    *column_name = string(col->name);
+    *column_attribute = new ColumnAttribute(col->type);
 }
 
 QueryResult *SQLExec::create(const CreateStatement *statement) {
@@ -85,8 +86,9 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
         ColumnAttributes* column_attributes = new ColumnAttributes();
         ColumnNames *column_names = new ColumnNames();
         for (ColumnDefinition *col : *statement->columns) {
-            string column_name = string(col->name);
-            ColumnAttribute column_attribute = new ColumnAttribute(col->type);
+            string column_name;
+            ColumnAttribute column_attribute;
+            column_definition(col, column_name, column_attribute);
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
