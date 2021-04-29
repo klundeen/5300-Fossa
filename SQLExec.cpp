@@ -48,8 +48,8 @@ QueryResult::~QueryResult() {
 
 
 QueryResult *SQLExec::execute(const SQLStatement *statement) {
-    // FIXME: initialize _tables table, if not yet present
-
+    if (SQLExec::tables == nullptr)
+        SQLExec::tables = new Tables();
     try {
         switch (statement->type()) {
             case kStmtCreate:
@@ -72,6 +72,24 @@ SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name,
 }
 
 QueryResult *SQLExec::create(const CreateStatement *statement) {
+    if (statement->type != CreateStatement::kTable) {
+        throw SQLExecError("CREATE Statement Not recognized");
+    } else {
+        string table_name = string(statement->tableName);
+        ValueDict* table_entry = new ValueDict();
+        table_entry[] =
+        tables->insert()
+        ColumnAttributes *column_attributes = new ColumnAttribute();
+        ColumnNames *column_names = new ColumnNames();
+        for (ColumnDefinition *col : *stmt->columns) {
+            string column_name = string(col->name);
+            ColumnAttribute column_attribute = ColumnAttribute(col->type);
+            column_names->push_back(column_name);
+            column_attributes->push_back(column_attribute);
+        }
+        if (statement->ifNotExists)
+            ret += "IF NOT EXISTS ";
+    }
     return new QueryResult("not implemented"); // FIXME
 }
 
