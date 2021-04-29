@@ -78,7 +78,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
     string table_name = string(statement->tableName);
     ValueDict *table_entry = new ValueDict();
     Value val_table_name = Value(table_name);
-    *table_entry["table_name"] = *val_table_name;
+    (*table_entry)["table_name"] = val_table_name;
     tables->insert(table_entry); // May Throw DbRelationError
 
     try {
@@ -98,7 +98,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             table->create();
         }
     } catch (DbRelationError) {
-        tables->del(*tables->select(table_entry));
+        tables->del((*tables->select(table_entry))[0]);
     }
     return new QueryResult("Created" + table_name); // FIXME
 }
