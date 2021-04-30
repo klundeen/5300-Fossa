@@ -98,7 +98,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             Identifier column_name;
             ColumnAttribute column_attribute;
             column_definition(col, column_name, column_attribute);
-            column_names.push_back(column_name);
+            column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
         ValueDict row;
@@ -106,8 +106,8 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
         DbRelation &columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
         try {
             for (uint i = 0; i < column_names->size(); i++) {
-                row["column_name"] = *column_names[i];
-                row["data_type"] = Value(*column_attributes[i].get_data_type() ==
+                row["column_name"] = (*column_names)[i];
+                row["data_type"] = Value((*column_attributes)[i].get_data_type() ==
                                          ColumnAttribute::INT ? "INT" : "TEXT");
                 c_handles.push_back(
                         columns.insert(&row));  // Insert into _columns
