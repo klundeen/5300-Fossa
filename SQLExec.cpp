@@ -133,14 +133,26 @@ QueryResult *SQLExec::drop(const DropStatement *statement) {
 }
 
 QueryResult *SQLExec::show(const ShowStatement *statement) {
+    if (statement->type == ShowStatement::kTables) {
+        return show_tables();
+    }
+    return show_columns(statement);
     return new QueryResult("not implemented"); // FIXME
 }
 
 QueryResult *SQLExec::show_tables() {
+    DbRelation tables_relation = tables->get_table(Tables::TABLE_NAME);
+    // Construct Query with "Print out at message"
+    // Add in table_name to message and "\n"
+    // Call Dbrelation's select() method to get handles
+    // loop through handles (calling project each time project)
+    // Look through valueDict and add to QueryResult message (with a \n between rows)
     return new QueryResult("not implemented"); // FIXME
 }
 
 QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
+    // Logic for pulling columns out to print
+    // Call get_columns specific to the table in "statement"
     return new QueryResult("not implemented"); // FIXME
 }
 
