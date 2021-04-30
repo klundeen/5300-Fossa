@@ -71,7 +71,8 @@ SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name,
     column_name = string(col->name);
     cout << "Col->Type: " << col->type << endl;
     cout << "ColumnDefinition::DataType::INT : " << ColumnDefinition::DataType::INT << endl;
-    switch (col->type) {
+    ColumnDefinition::DataType dataType = col->type;
+    switch (dataType) {
         case ColumnDefinition::DataType::INT:
             column_attribute = ColumnAttribute(ColumnAttribute::INT);
         case ColumnDefinition::DataType::TEXT:
