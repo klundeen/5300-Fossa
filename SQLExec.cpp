@@ -69,6 +69,7 @@ QueryResult *SQLExec::execute(const SQLStatement *statement) {
 void
 SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name, ColumnAttribute &column_attribute) {
     column_name = string(col->name);
+    cout << "Col->Type: " << col->type;
     switch (col->type) {
         case ColumnDefinition::DataType::INT:
             column_attribute = ColumnAttribute(ColumnAttribute::INT);
