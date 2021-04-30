@@ -92,27 +92,30 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
 
     try {
         // Update _columns Schema
-        /**
+        ColumnNames column_names = new ColumnNames();
+        ColumnAttributes column_attributes = new ColumnAttributes();
         for (ColumnDefinition *col : *statement->columns) {
-            ValueDict *column_entry = new ValueDict();
-            Value val_table_name = Value(table_name);
-            Value val_column_name = string(col->name);
-            Value val_data_type = string((col->type == ColumnDefinition::TEXT)? "TEXT" : "INT");
-            (*column_entry)["table_name"] = val_table_name;
-            (*column_entry)["column_name"] = val_column_name;
-            (*column_entry)["data_type"] = val_data_type;
-            tables->columns_table->insert(column_entry); // May Throw DbRelationError
-        }
-        **/
-        // Update _columns Schema
-        ColumnAttributes* column_attributes = new ColumnAttributes();
-        ColumnNames *column_names = new ColumnNames();
-        for (ColumnDefinition *col : *statement->columns) {
-            string column_name;
+            Identifier column_name;
             ColumnAttribute column_attribute;
             column_definition(col, column_name, column_attribute);
-            column_names->push_back(column_name);
-            column_attributes->push_back(column_attribute);
+            column_names.pushback(column_name);
+            column_attributes.pushback(column_attribute);
+        }
+        ValueDict row;
+        Handles c_handles;
+        DbRelation &columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
+        try {
+            for (uint i = 0; i < column_names.size(); i++) {
+                row["column_name"] = column_names[i];
+                row["data_type"] = Value(column_attributes[i].get_data_type() ==
+                                         ColumnAttribute::INT ? "INT" : "TEXT");
+                c_handles.push_back(
+                        columns.insert(&row));  // Insert into _columns
+            }
+        } catch (...) {
+            for(Handle handle : c_handles) {
+                columns.del(handle);
+            }
         }
         HeapTable *table = new HeapTable(table_name, *column_names,
                                      *column_attributes);
