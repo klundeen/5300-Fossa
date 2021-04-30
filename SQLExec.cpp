@@ -70,9 +70,9 @@ void
 SQLExec::column_definition(const ColumnDefinition *col, Identifier &column_name, ColumnAttribute &column_attribute) {
     column_name = string(col->name);
     switch (col->type) {
-        case ColumnDefinition::INT:
+        case INT:
             column_attribute = ColumnAttribute(ColumnAttribute::INT);
-        case ColumnDefinition::TEXT:
+        case TEXT:
             column_attribute = ColumnAttribute(ColumnAttribute::TEXT);
         default:
             throw SQLExecError("Column Datatype not supported");
