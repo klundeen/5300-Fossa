@@ -139,11 +139,17 @@ QueryResult *SQLExec::drop(const DropStatement *statement) {
 }
 
 QueryResult *SQLExec::show(const ShowStatement *statement) {
-    if (statement->type == ShowStatement::kTables) {
-        return show_tables();
+    switch(statement->type){
+	case ShowStatement::kTables:
+            return show_tables();
+        case ShowStatement::kColumns:
+            return show_columns(statement);
+       // case ShowStatement::kIndex:
+           // return show_index(statement);
+        default:
+            throw SQLExecError("unrecognized SHOW type");
     }
-    return show_columns(statement);
-    return new QueryResult("not implemented"); // FIXME
+    return new QueryResult("not implemented");
 }
 
 QueryResult *SQLExec::show_tables() {
@@ -153,12 +159,50 @@ QueryResult *SQLExec::show_tables() {
     // Call Dbrelation's select() method to get handles
     // loop through handles (calling project each time project)
     // Look through valueDict and add to QueryResult message (with a \n between rows)
-    return new QueryResult("not implemented"); // FIXME
+    ColumnNames *col_names = new ColumnNames;
+    col_names->push_back("table_name");
+
+    ColumnAttributes *col_attributes = new ColumnAttributes;
+    col_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
+
+    Handles *handles = SQLExec::tables->select();
+    u_long n = handles->size() -3;
+    ValueDicts *rows = new ValueDicts;
+    for(auto const &handle: *handles){
+	ValueDict *row = SQLExec::tables->project(handle, col_names);
+        Identifier table_name = row->at("table_name").s;
+        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME) //removed table_name != Indices::TABLE_NAME for test
+            rows->push_back(row);
+        else
+            delete row;
+    }
+    delete handles;
+    return new QueryResult(col_names, col_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
 QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     // Logic for pulling columns out to print
     // Call get_columns specific to the table in "statement"
-    return new QueryResult("not implemented"); // FIXME
+    DbRelation &cols = SQLExec::tables->get_table(Columns::TABLE_NAME);
+
+    ColumnNames *column_names = new ColumnNames;
+    column_names->push_back("table_name");
+    column_names->push_back("column_name");
+    column_names->push_back("data_type");
+
+    ColumnAttributes *column_attributes = new ColumnAttributes;
+    column_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
+
+    ValueDict where;
+    where["table_name"] = Value(statement->tableName);
+    Handles *handles = cols.select(&where);
+
+    ValueDicts *rows = new ValueDicts;
+    for (auto const &handle: *handles){
+	ValueDict *row = cols.project(handle, column_names);
+	rows->push_back(row);
+    }
+    delete handles;
+    return new QueryResult(column_names, column_attributes, rows, "success"); 
 }
 
