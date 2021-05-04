@@ -144,8 +144,8 @@ QueryResult *SQLExec::show(const ShowStatement *statement) {
             return show_tables();
         case ShowStatement::kColumns:
             return show_columns(statement);
-        case ShowStatement::kIndex:
-            return show_index(statement);
+       // case ShowStatement::kIndex:
+           // return show_index(statement);
         default:
             throw SQLExecError("unrecognized SHOW type");
     }
@@ -163,26 +163,46 @@ QueryResult *SQLExec::show_tables() {
     col_names->push_back("table_name");
 
     ColumnAttributes *col_attributes = new ColumnAttributes;
-    col_attributes->push_back(ColumnAttribute::ColumnAttribut(TEXT));
+    col_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
 
-    Handle *handles = SQLExec::tables->select();
+    Handles *handles = SQLExec::tables->select();
     u_long n = handles->size() -3;
     ValueDicts *rows = new ValueDicts;
     for(auto const &handle: *handles){
-	ValueDict *row = SQLExec::tables->project(handle, column_names);
+	ValueDict *row = SQLExec::tables->project(handle, col_names);
         Identifier table_name = row->at("table_name").s;
-        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME && table_name != Indices::TABLE_NAME)
+        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME) //removed table_name != Indices::TABLE_NAME for test
             rows->push_back(row);
         else
             delete row;
     }
     delete handles;
-    return new QueryResult(column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
+    return new QueryResult(col_names, col_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
 QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     // Logic for pulling columns out to print
     // Call get_columns specific to the table in "statement"
-    return new QueryResult("not implemented"); // FIXME
+    DbRelation &cols = SQLExec::tables->get_table(Columns::TABLE_NAME);
+
+    ColumnNames *column_names = new ColumnNames;
+    column_names->push_back("table_name");
+    column_names->push_back("column_name");
+    column_names->push_back("data_type");
+
+    ColumnAttributes *column_attributes = new ColumnAttributes;
+    column_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
+
+    ValueDict where;
+    where["table_name"] = Value(statement->tableName);
+    Handles *handles = cols.select(&where);
+
+    ValueDicts *rows = new ValueDicts;
+    for (auto const &handle: *handles){
+	ValueDict *row = cols.project(handle, column_names);
+	rows->push_back(row);
+    }
+    delete handles;
+    return new QueryResult(column_names, column_attributes, rows, "success"); 
 }
 
