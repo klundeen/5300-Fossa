@@ -166,7 +166,7 @@ QueryResult *SQLExec::show_tables() {
     col_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
 
     Handles *handles = SQLExec::tables->select();
-    u_long n = handles->size() -3;
+    auto n = handles->size();
     ValueDicts *rows = new ValueDicts;
     for(auto const &handle: *handles){
 	ValueDict *row = SQLExec::tables->project(handle, col_names);
