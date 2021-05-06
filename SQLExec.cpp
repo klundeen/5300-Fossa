@@ -219,7 +219,9 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
 
     auto n = column_names->size();
     auto c = rows->size();
-    cout << "Rows Size: " << c << endl;
+    auto f = column_names->size();
+    auto d = column_attributes->size();
+    cout << "Sizes: " << c << f << d << endl;
     return new QueryResult(default_column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
