@@ -106,7 +106,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             cout << "Column Name: " << column_name << endl;
             string isEqual = (column_name == "x")? "true" : "false";
             cout << "isEqual: " << isEqual << endl;
-            if (std::find(column_names->begin(), column_names->end(), column_name) != column_names->end()) {
+            if (std::find(column_names->begin(), column_names->end(), string(column_name)) != column_names->end()) {
                 throw DbRelationError("duplicate column " + table_name + "." + column_name);
                 cout << "Error Thrown" << endl;
             }
