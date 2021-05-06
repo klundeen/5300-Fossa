@@ -110,21 +110,24 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
-        ValueDict row;
+        ValueDict* row = new ValueDict;
         Handles c_handles;
         DbRelation &columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
         try {
             for (uint i = 0; i < column_names->size(); i++) {
-                row["column_name"] = (*column_names)[i];
-                row["data_type"] = Value((*column_attributes)[i].get_data_type() ==
+                (*row)["column_name"] = (*column_names)[i];
+                (*row)["data_type"] = Value((*column_attributes)[i].get_data_type() ==
                                          ColumnAttribute::INT ? "INT" : "TEXT");
+                cout << "Inserting" << endl;
                 c_handles.push_back(
-                        columns.insert(&row));  // Insert into _columns
+                        columns.insert(row));  // Insert into _columns
             }
-        } catch (...) {
+        } catch (DbRelationError e) {
+            cout << "ERROR CAUGHT!" << endl;
             for(Handle handle : c_handles) {
                 columns.del(handle);
             }
+            return new QueryResult("Error: DbRelationError: " + string(e.what()));
         }
 
         HeapTable *table = new HeapTable(table_name, *column_names,
