@@ -103,14 +103,9 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             Identifier column_name;
             ColumnAttribute column_attribute;
             column_definition(col, column_name, column_attribute);
-            cout << "Column Name: " << column_name << endl;
-            string isEqual = (column_name == "x")? "true" : "false";
-            cout << "isEqual: " << isEqual << endl;
             if (std::find(column_names->begin(), column_names->end(), column_name) != column_names->end()) {
-                cout << " Duplicate Column" << endl;
-                throw DbRelationError("duplicate column " + table_name + "." + column_name);
-            } else {
-                cout << "Unique Column" << endl;
+                throw DbRelationError(
+                        "duplicate column " + table_name + "." + column_name);
             }
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
@@ -140,7 +135,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
         }
     } catch (DbRelationError e) {
         tables->del((*tables->select(table_entry))[0]);
-        return new QueryResult(string(e.what()));
+        return new QueryResult("Error: DbRelationError: " + string(e.what()));
 
     }
     return new QueryResult("Created " + table_name); // FIXME
