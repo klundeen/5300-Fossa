@@ -105,7 +105,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
                 cout << "Error Thrown" << endl;
             }
             ColumnAttribute column_attribute;
-            column_definition(col, c1olumn_name, column_attribute);
+            column_definition(col, column_name, column_attribute);
             cout << "Column Found: " << column_name << endl;
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
