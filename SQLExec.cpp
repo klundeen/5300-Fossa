@@ -167,7 +167,7 @@ QueryResult *SQLExec::show_tables() {
 
     Handles *handles = SQLExec::tables->select();
     auto n = handles->size();
-    (n >= 2)? n -= 2 : cout << "n < 2";
+    cout << "n: " << n << endl;
     ValueDicts *rows = new ValueDicts;
     for(auto const &handle: *handles){
 	ValueDict *row = SQLExec::tables->project(handle, col_names);
