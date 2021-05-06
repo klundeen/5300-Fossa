@@ -99,8 +99,9 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
         ColumnAttributes* column_attributes = new ColumnAttributes();
         for (ColumnDefinition *col : *statement->columns) {
             Identifier column_name;
-            if (find(column_names->begin(), column_names->end(), column_name) != column_names->end()) {
+            if (std::find(column_names->begin(), column_names->end(), column_name) != column_names->end()) {
                 throw DbRelationError("duplicate column " + table_name + "." + column_name);
+                cout << "Error Thrown" << endl;
             }
             ColumnAttribute column_attribute;
             column_definition(col, column_name, column_attribute);
