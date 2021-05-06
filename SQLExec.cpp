@@ -206,12 +206,14 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
    default_column_names->push_back("data_type");
 
     ValueDicts* rows = new ValueDicts;
+    int i = 0;
     for (Identifier col_name : *column_names) {
         ValueDict* row = new ValueDict;
         (*row)["table_name"] = Value(statement->tableName);
         (*row)["column_name"] = Value(col_name);
         (*row)["data_type"] = Value((*column_attributes)[i]->get_data_type());
         rows->push_back(row);
+        i++;
     }
 
     auto n = column_names->size();
