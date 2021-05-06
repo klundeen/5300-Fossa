@@ -126,6 +126,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
                 columns.del(handle);
             }
         }
+
         HeapTable *table = new HeapTable(table_name, *column_names,
                                      *column_attributes);
         if (statement->ifNotExists) {
@@ -194,27 +195,20 @@ QueryResult *SQLExec::show_tables() {
 QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     // Logic for pulling columns out to print
     // Call get_columns specific to the table in "statement"
-    DbRelation &cols = SQLExec::tables->get_table(Columns::TABLE_NAME);
 
     ColumnNames *column_names = new ColumnNames;
-    column_names->push_back("table_name");
-    column_names->push_back("column_name");
-    column_names->push_back("data_type");
-
     ColumnAttributes *column_attributes = new ColumnAttributes;
-    column_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
+   SQLExec::tables->get_columns(statement->tableName, column_names, column_attributes);
 
-    ValueDict where;
-    where["table_name"] = Value(statement->tableName);
-    Handles *handles = cols.select(&where);
-
-    ValueDicts *rows = new ValueDicts;
-    for (auto const &handle: *handles){
-	    ValueDict *row = cols.project(handle, column_names);
-	    rows->push_back(row);
+    ValueDicts rows = new ValueDicts;
+    for (ColumnName col_name : column_names) {
+        ValueDict row = new ValueDict;
+        rows["table_name"] = Value(statement->tableName);
+        rows["column_name"] = Value(column_names[i]);
+        rows["data_type"] = Value(column_attributes[i]->get_data_type());
+        rows.push_back(row);
     }
-    unsigned long int n = handles->size();
-    delete handles;
-    return new QueryResult(column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
+
+    return new QueryResult(&Columns::COLUMN_NAMES(), column_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
