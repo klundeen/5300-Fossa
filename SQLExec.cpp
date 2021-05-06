@@ -149,7 +149,7 @@ QueryResult *SQLExec::drop(const DropStatement *statement) {
 
 QueryResult *SQLExec::show(const ShowStatement *statement) {
     switch(statement->type){
-	case ShowStatement::kTables:
+        case ShowStatement::kTables:
             return show_tables();
         case ShowStatement::kColumns:
             return show_columns(statement);
@@ -196,6 +196,7 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     // Logic for pulling columns out to print
     // Call get_columns specific to the table in "statement"
 
+    cout << "in Show Columns" << endl;
     ColumnNames *column_names = new ColumnNames;
     ColumnAttributes *column_attributes = new ColumnAttributes;
    SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
@@ -217,6 +218,8 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     }
 
     auto n = column_names->size();
+    auto c = rows->size();
+    cout << "Rows Size: " << c << endl;
     return new QueryResult(default_column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
