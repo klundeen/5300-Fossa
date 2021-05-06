@@ -99,6 +99,9 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
         ColumnAttributes* column_attributes = new ColumnAttributes();
         for (ColumnDefinition *col : *statement->columns) {
             Identifier column_name;
+            if (find(column_names->begin(), column_names.end(), column_names) != column_names.end()) {
+                throw DbRelationError;
+            }
             ColumnAttribute column_attribute;
             column_definition(col, column_name, column_attribute);
             column_names->push_back(column_name);
