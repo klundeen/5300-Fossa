@@ -115,7 +115,8 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
         DbRelation &columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
         try {
             for (uint i = 0; i < column_names->size(); i++) {
-                (*row)["column_name"] = (*column_names)[i];
+                (*row)["table_name"] = Value(table_name);
+                (*row)["column_name"] = Value((*column_names)[i]);
                 (*row)["data_type"] = Value((*column_attributes)[i].get_data_type() ==
                                          ColumnAttribute::INT ? "INT" : "TEXT");
                 cout << "Inserting" << endl;
