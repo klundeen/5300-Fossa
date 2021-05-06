@@ -198,7 +198,7 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
 
     ColumnNames *column_names = new ColumnNames;
     ColumnAttributes *column_attributes = new ColumnAttributes;
-   SQLExec::tables->get_columns(statement->tableName, column_names, column_attributes);
+   SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
 
     ValueDicts rows = new ValueDicts;
     for (ColumnName col_name : column_names) {
