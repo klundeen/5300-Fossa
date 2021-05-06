@@ -167,6 +167,8 @@ QueryResult *SQLExec::show_tables() {
 
     Handles *handles = SQLExec::tables->select();
     auto n = handles->size();
+    unsigned long int over_count = 2;
+    n = (n >= over_count)? n - over_count : n;
     cout << "n: " << n << endl;
     ValueDicts *rows = new ValueDicts;
     for(auto const &handle: *handles){
