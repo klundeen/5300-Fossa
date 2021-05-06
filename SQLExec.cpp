@@ -208,9 +208,9 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     ValueDicts* rows = new ValueDicts;
     for (Identifier col_name : *column_names) {
         ValueDict* row = new ValueDict;
-        row["table_name"] = Value(statement->tableName);
-        row["column_name"] = Value(col_name);
-        row["data_type"] = Value(column_attributes[i]->get_data_type());
+        (*row)["table_name"] = Value(statement->tableName);
+        (*row)["column_name"] = Value(col_name);
+        (*row)["data_type"] = Value(column_attributes[i]->get_data_type());
         rows.push_back(row);
     }
 
