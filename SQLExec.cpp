@@ -202,10 +202,11 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
 
     ValueDicts *rows = new ValueDicts;
     for (auto const &handle: *handles){
-	ValueDict *row = cols.project(handle, column_names);
-	rows->push_back(row);
+	    ValueDict *row = cols.project(handle, column_names);
+	    rows->push_back(row);
     }
+    unsigned long int n = handles->size();
     delete handles;
-    return new QueryResult(column_names, column_attributes, rows, "success"); 
+    return new QueryResult(column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
