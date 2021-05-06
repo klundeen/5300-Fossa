@@ -211,7 +211,7 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
         (*row)["table_name"] = Value(statement->tableName);
         (*row)["column_name"] = Value(col_name);
         (*row)["data_type"] = Value((*column_attributes)[i]->get_data_type());
-        rows.push_back(row);
+        rows->push_back(row);
     }
 
     auto n = column_names->size();
