@@ -130,7 +130,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
     } catch (DbRelationError) {
         tables->del((*tables->select(table_entry))[0]);
     }
-    return new QueryResult("Created" + table_name); // FIXME
+    return new QueryResult("Created " + table_name); // FIXME
 }
 
 // DROP ...
