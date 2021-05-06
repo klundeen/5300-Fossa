@@ -206,7 +206,7 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
    default_column_names->push_back("data_type");
 
     ValueDicts* rows = new ValueDicts;
-    for (Identifier col_name : column_names) {
+    for (Identifier col_name : *column_names) {
         ValueDict* row = new ValueDict;
         row["table_name"] = Value(statement->tableName);
         row["column_name"] = Value(col_name);
