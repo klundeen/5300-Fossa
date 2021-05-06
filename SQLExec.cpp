@@ -200,15 +200,21 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     ColumnAttributes *column_attributes = new ColumnAttributes;
    SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
 
-    ValueDicts rows = new ValueDicts;
-    for (ColumnName col_name : column_names) {
-        ValueDict row = new ValueDict;
+   ColumnNames* default_column_names = new ColumnNames;
+   default_column_names->push_back("table_name");
+   default_column_names->push_back("column_name");
+   default_column_names->push_back("data_type");
+
+    ValueDicts* rows = new ValueDicts;
+    for (Identifier col_name : column_names) {
+        ValueDict* row = new ValueDict;
         row["table_name"] = Value(statement->tableName);
-        row["column_name"] = Value(column_names[i]);
+        row["column_name"] = Value(col_name);
         row["data_type"] = Value(column_attributes[i]->get_data_type());
         rows.push_back(row);
     }
 
-    return new QueryResult(&Columns::COLUMN_NAMES(), column_attributes, rows, "successfully returned " + to_string(n) + " rows");
+    auto n = column_names->size();
+    return new QueryResult(default_column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
