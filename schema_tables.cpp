@@ -5,6 +5,7 @@
  */
 #include "schema_tables.h"
 #include "ParseTreeToString.h"
+#include <iostream>
 
 
 void initialize_schema_tables() {
