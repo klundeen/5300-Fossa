@@ -216,7 +216,8 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
         ValueDict* row = new ValueDict;
         (*row)["table_name"] = Value(statement->tableName);
         (*row)["column_name"] = Value(col_name);
-        (*row)["data_type"] = Value((*column_attributes)[i].get_data_type());
+        (*row)["data_type"] = Value((*column_attributes)[i].get_data_type() ==
+                                    ColumnAttribute::INT ? "INT" : "TEXT");
         rows->push_back(row);
         i++;
     }
