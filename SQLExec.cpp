@@ -103,10 +103,12 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             Identifier column_name;
             ColumnAttribute column_attribute;
             column_definition(col, column_name, column_attribute);
+            /**
             if (std::find(column_names->begin(), column_names->end(), column_name) != column_names->end()) {
                 throw DbRelationError(
                         "duplicate column " + table_name + "." + column_name);
             }
+            **/
             column_names->push_back(column_name);
             column_attributes->push_back(column_attribute);
         }
@@ -219,8 +221,10 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     cout << "in Show Columns" << endl;
     ColumnNames *column_names = new ColumnNames;
     ColumnAttributes *column_attributes = new ColumnAttributes;
+
    SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
 
+    cout << "Executed get columns" << endl;
    ColumnNames* default_column_names = new ColumnNames;
    default_column_names->push_back("table_name");
    default_column_names->push_back("column_name");
