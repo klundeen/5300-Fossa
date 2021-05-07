@@ -115,6 +115,7 @@ void Tables::get_columns(Identifier table_name, ColumnNames &column_names, Colum
     where["table_name"] = table_name;
     Handles *handles = Tables::columns_table->select(&where);
 
+    cout << "debugg line 1" << endl;
     ColumnAttribute column_attribute;
     for (auto const &handle: *handles) {
         ValueDict *row = Tables::columns_table->project(
