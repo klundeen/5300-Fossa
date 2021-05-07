@@ -121,7 +121,6 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
                 (*row)["column_name"] = Value((*column_names)[i]);
                 (*row)["data_type"] = Value((*column_attributes)[i].get_data_type() ==
                                          ColumnAttribute::INT ? "INT" : "TEXT");
-                cout << "Inserting" << endl;
                 c_handles.push_back(
                         columns.insert(row));  // Insert into _columns
             }
@@ -130,7 +129,7 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
             for(Handle handle : c_handles) {
                 columns.del(handle);
             }
-            return new QueryResult("Error: DbRelationError: " + string(e.what()));
+            throw e;
         }
 
         HeapTable *table = new HeapTable(table_name, *column_names,
