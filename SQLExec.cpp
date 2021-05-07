@@ -162,7 +162,9 @@ QueryResult *SQLExec::drop(const DropStatement *statement) {
     }
 
     delete handles;
-    columns.drop();
+
+    DbRelation &table = tables->get_table(statement->name);
+    table.drop();
 
     tables->del(*tables->select(where)->begin());
 
@@ -217,18 +219,17 @@ QueryResult *SQLExec::show_tables() {
 QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     // Logic for pulling columns out to print
     // Call get_columns specific to the table in "statement"
-
     cout << "in Show Columns" << endl;
     ColumnNames *column_names = new ColumnNames;
     ColumnAttributes *column_attributes = new ColumnAttributes;
 
-   SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
+    SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
 
     cout << "Executed get columns" << endl;
-   ColumnNames* default_column_names = new ColumnNames;
-   default_column_names->push_back("table_name");
-   default_column_names->push_back("column_name");
-   default_column_names->push_back("data_type");
+    ColumnNames* default_column_names = new ColumnNames;
+    default_column_names->push_back("table_name");
+    default_column_names->push_back("column_name");
+    default_column_names->push_back("data_type");
 
     ValueDicts* rows = new ValueDicts;
     int i = 0;
