@@ -5,8 +5,6 @@
  */
 #include "schema_tables.h"
 #include "ParseTreeToString.h"
-#include <iostream>
-using namespace std;
 
 void initialize_schema_tables() {
     Tables tables;
@@ -114,10 +112,7 @@ void Tables::get_columns(Identifier table_name, ColumnNames &column_names, Colum
     // SELECT * FROM _columns WHERE table_name = <table_name>
     ValueDict where;
     where["table_name"] = table_name;
-    cout << "table_name: " << table_name << endl;
     Handles *handles = Tables::columns_table->select(&where);
-
-    cout << "debugg line 1" << endl;
     ColumnAttribute column_attribute;
     for (auto const &handle: *handles) {
         ValueDict *row = Tables::columns_table->project(
