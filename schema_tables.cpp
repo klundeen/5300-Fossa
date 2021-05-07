@@ -6,7 +6,7 @@
 #include "schema_tables.h"
 #include "ParseTreeToString.h"
 #include <iostream>
-
+using namespace std;
 
 void initialize_schema_tables() {
     Tables tables;
