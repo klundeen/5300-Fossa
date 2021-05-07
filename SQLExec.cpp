@@ -125,7 +125,6 @@ QueryResult *SQLExec::create(const CreateStatement *statement) {
                         columns.insert(row));  // Insert into _columns
             }
         } catch (DbRelationError e) {
-            cout << "ERROR CAUGHT!" << endl;
             for(Handle handle : c_handles) {
                 columns.del(handle);
             }
@@ -201,7 +200,6 @@ QueryResult *SQLExec::show_tables() {
     auto n = handles->size();
     unsigned long int over_count = 2;
     n = (n >= over_count)? n - over_count : n;
-    cout << "n: " << n << endl;
     ValueDicts *rows = new ValueDicts;
     for(auto const &handle: *handles){
 	ValueDict *row = SQLExec::tables->project(handle, col_names);
@@ -218,13 +216,11 @@ QueryResult *SQLExec::show_tables() {
 QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     // Logic for pulling columns out to print
     // Call get_columns specific to the table in "statement"
-    cout << "in Show Columns" << endl;
     ColumnNames *column_names = new ColumnNames;
     ColumnAttributes *column_attributes = new ColumnAttributes;
 
     SQLExec::tables->get_columns(Identifier(statement->tableName), *column_names, *column_attributes);
 
-    cout << "Executed get columns" << endl;
     ColumnNames* default_column_names = new ColumnNames;
     default_column_names->push_back("table_name");
     default_column_names->push_back("column_name");
@@ -246,7 +242,6 @@ QueryResult *SQLExec::show_columns(const ShowStatement *statement) {
     auto c = rows->size();
     auto f = column_names->size();
     auto d = column_attributes->size();
-    cout << "Sizes: " << c << f << d << endl;
     return new QueryResult(default_column_names, column_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
