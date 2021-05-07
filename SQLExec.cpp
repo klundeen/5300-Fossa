@@ -153,18 +153,18 @@ QueryResult *SQLExec::drop(const DropStatement *statement) {
     }
     DbRelation &columns = tables->get_table(Columns::TABLE_NAME);
     ValueDict* where = new ValueDict;
-    where["table_name"] = string(statement->tableName);
-    Handles handles = columns.select(where);
-    for (Handle handle : handles) {
+    (*where)["table_name"] = string(statement->name);
+    Handles* handles = columns.select(where);
+    for (Handle handle : *handles) {
         columns.del(handle);
     }
 
     delete handles;
-    table_relation.drop();
+    columns.drop();
 
     tables->del(tables->select(where)-begin());
 
-    return new QueryResult(string("dropped " + string(statement->tableName)));
+    return new QueryResult(string("dropped " + string(statement->name)));
 }
 
 QueryResult *SQLExec::show(const ShowStatement *statement) {
