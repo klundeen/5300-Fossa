@@ -162,7 +162,7 @@ QueryResult *SQLExec::drop(const DropStatement *statement) {
     delete handles;
     columns.drop();
 
-    tables->del(tables->select(where)->begin());
+    tables->del(*tables->select(where)->begin());
 
     return new QueryResult(string("dropped " + string(statement->name)));
 }
