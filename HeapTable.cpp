@@ -4,6 +4,7 @@
  * @see Seattle University, CPSC5300
  */
 #include <cstring>
+#include <iostream>
 #include "HeapTable.h"
 
 using namespace std;
@@ -34,7 +35,9 @@ void HeapTable::create() {
 void HeapTable::create_if_not_exists() {
     try {
         open();
+        std::cout << "HeapTable Reach #1" << std::endl;
     } catch (DbException &e) {
+        std::cout << "HeapTable Reach #2" << std::endl;
         create();
     }
 }
