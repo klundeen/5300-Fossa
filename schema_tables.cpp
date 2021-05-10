@@ -231,17 +231,20 @@ void Columns::create() {
     insert(&row);
     row["column_name"] = Value("is_unique");
     row["data_type"] = Value("BOOLEAN");
+    std::cout << "create reach #1" << std::endl;
     insert(&row);
 }
 
 // Manually check that (table_name, column_name) is unique.
 Handle Columns::insert(const ValueDict *row) {
     // Check that datatype is acceptable
+    std::cout << "create reach #2" << std::endl;
     if (!is_acceptable_identifier(row->at("table_name").s))
         throw DbRelationError("unacceptable table name '" + row->at("table_name").s + "'");
     if (!is_acceptable_identifier(row->at("column_name").s))
         throw DbRelationError("unacceptable column name '" + row->at("column_name").s + "'");
     if (!is_acceptable_data_type(row->at("data_type").s))
+        std::cout << "create reach #3" << std::endl;
         throw DbRelationError("unacceptable data type '" + row->at("data_type").s + "'");
 
     // Try SELECT * FROM _columns WHERE table_name = row["table_name"] AND column_name = column_name["column_name"]
