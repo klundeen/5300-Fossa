@@ -243,9 +243,10 @@ Handle Columns::insert(const ValueDict *row) {
         throw DbRelationError("unacceptable table name '" + row->at("table_name").s + "'");
     if (!is_acceptable_identifier(row->at("column_name").s))
         throw DbRelationError("unacceptable column name '" + row->at("column_name").s + "'");
-    if (!is_acceptable_data_type(row->at("data_type").s))
+    if (!is_acceptable_data_type(row->at("data_type").s)) {
         std::cout << "create reach #3" << std::endl;
         throw DbRelationError("unacceptable data type '" + row->at("data_type").s + "'");
+    }
 
     // Try SELECT * FROM _columns WHERE table_name = row["table_name"] AND column_name = column_name["column_name"]
     // and it should return nothing
