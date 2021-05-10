@@ -187,7 +187,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
                 index_row["index_type"] = index_type;
                 index_row["is_unique"] = is_unique;
                 // construct ValueDict for index row
-                inserted_rows.push_back(indices->insert(index_row));
+                inserted_rows.push_back(&indices->insert(index_row));
             }
         }
     } catch (exception &e) {
