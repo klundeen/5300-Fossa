@@ -230,6 +230,12 @@ QueryResult *SQLExec::drop_table(const DropStatement *statement) {
         columns.del(handle);
     delete handles;
 
+    // remove Indices for table
+    IndexNames index_names = indices->get_index_names(table_name);
+    for (Identifier index : index_names) {
+        DbIndex& index_handle = indices->get_index(table_name, index);
+        index_handle.drop();
+    }
     // remove table
     table.drop();
 
@@ -242,8 +248,23 @@ QueryResult *SQLExec::drop_table(const DropStatement *statement) {
 }
 
 QueryResult *SQLExec::drop_index(const DropStatement *statement) {
+    string table_name = string(statement->tableName);
+    string index_name = string(statement->indexName);
+    DbIndex& index = indices->get_index(table_name, index_name);
+    index.drop();
 
-    return new QueryResult("drop index not implemented");  // FIXME
+    DbRelation& indices_table = tables->get_table(Indices::TABLE_NAME);
+    ValueDict where;
+    where["index_name"] = Value(index_name);
+    where["table_name"] = Value(table_name);
+    Handles *handles = indices_table.select(&where);
+
+    for (auto const &handle: *handles)
+        indices_table.del(handle);
+    delete handles;
+    ColumnNames index_columns;
+
+    return new QueryResult("dropped index " + index_name);
 }
 
 QueryResult *SQLExec::show(const ShowStatement *statement) {
