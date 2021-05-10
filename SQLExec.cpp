@@ -195,7 +195,8 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
             indices->del(handle);
         }
     }
-    indices->create();
+    DbRelation& index = indices->get_index(table_name, index_name);
+    index.create();
     return new QueryResult("creates index " + index_name + " on " + table_name);
 }
 
@@ -241,6 +242,7 @@ QueryResult *SQLExec::drop_table(const DropStatement *statement) {
 }
 
 QueryResult *SQLExec::drop_index(const DropStatement *statement) {
+
     return new QueryResult("drop index not implemented");  // FIXME
 }
 
