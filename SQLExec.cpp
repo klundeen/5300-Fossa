@@ -4,8 +4,6 @@
  * @see "Seattle University, CPSC5300, Spring 2021"
  */
 #include "SQLExec.h"
-#include <vector>
-#include <algorithm>
 
 using namespace std;
 using namespace hsql;
