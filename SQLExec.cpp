@@ -197,7 +197,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     }
     DbRelation& index = indices->get_index(table_name, index_name);
     index.create();
-    return new QueryResult("creates index " + index_name + " on " + table_name);
+    return new QueryResult("created index " + index_name);
 }
 
 // DROP ...
