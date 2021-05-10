@@ -10,6 +10,7 @@ using namespace hsql;
 
 // define static data
 Tables *SQLExec::tables = nullptr;
+Indices *SQLExec::indices = nullptr;
 
 // make query result be printable
 ostream &operator<<(ostream &out, const QueryResult &qres) {
@@ -62,6 +63,8 @@ QueryResult *SQLExec::execute(const SQLStatement *statement) {
     // initialize _tables table, if not yet present
     if (SQLExec::tables == nullptr)
         SQLExec::tables = new Tables();
+    if (SQLExec::indices == nullptr)
+        SQLExec::indices = new Indices();
 
     try {
         switch (statement->type()) {
@@ -159,7 +162,41 @@ QueryResult *SQLExec::create_table(const CreateStatement *statement) {
 }
 
 QueryResult *SQLExec::create_index(const CreateStatement *statement) {
-    return new QueryResult("create index not implemented");  // FIXME
+    string table_name = string(statement->tableName);
+    string index_name = string(statement->indexName);
+    string index_type = string(statement->indexType);
+    string is_unique = (index_type == "BTREE")? "true" : "false";
+    vector<char*> index_columns = statement->indexColumns;
+    DbRelation* table_to_index = tables->get_table(table_name);
+    ColumnNames table_to_index_columns = table_to_index->get_column_names();
+
+    int seq_in_index = 0;
+
+    Handles inserted_rows;
+    try {
+        for (char* col : index_columns) {
+            if (find(table_to_index_columns.begin(), table_to_index_columns.end(), Identifier(col)) == table_to_index_columns.end()) {
+                throw DbRelationError("Indexing column not found in table to index");
+            } else {
+                seq_in_index++;
+                ValueDict* index_row;
+                index_row["table_name"] = table_name;
+                index_row["index_name"] = index_name;
+                index_row["seq_in_index"] = to_string(seq_in_index);
+                index_row["column_name"] = string(col);
+                index_row["index_type"] = index_type;
+                index_row["is_unique"] = is_unique;
+                // construct ValueDict for index row
+                inserted_rows.push_back(indices->insert(index_row));
+            }
+        }
+    } catch (exception &e) {
+        for (Handle handle : inserted_rows) {
+            indices->del(handle);
+        }
+    }
+    indices->create();
+    return new QueryResult("creates index " + index_name + " on " + table_name);
 }
 
 // DROP ...
