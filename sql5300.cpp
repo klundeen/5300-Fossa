@@ -76,14 +76,20 @@ void initialize_environment(char *envHome) {
     cout << "(sql5300: running with database environment at " << envHome << ")" << endl;
 
     DbEnv *env = new DbEnv(0U);
+    cout << "Reach 1" << endl;
     env->set_message_stream(&cout);
+    cout << "Reach 2" << endl;
     env->set_error_stream(&cerr);
+    cout << "Reach 3" << endl;
     try {
         env->open(envHome, DB_CREATE | DB_INIT_MPOOL, 0);
+        cout << "Reach 4" << endl;
     } catch (DbException &exc) {
         cerr << "(sql5300: " << exc.what() << ")" << endl;
         exit(1);
     }
     _DB_ENV = env;
+    cout << "Reach 5" << endl;
     initialize_schema_tables();
+    cout << "Reach 6" << endl;
 }
