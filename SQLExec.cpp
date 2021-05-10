@@ -167,7 +167,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     string index_type = string(statement->indexType);
     string is_unique = (index_type == "BTREE")? "true" : "false";
     vector<char*>* index_columns = statement->indexColumns;
-    DbRelation table_to_index = tables->get_table(table_name);
+    DbRelation& table_to_index = tables->get_table(table_name);
     ColumnNames table_to_index_columns = table_to_index->get_column_names();
 
     int seq_in_index = 0;
