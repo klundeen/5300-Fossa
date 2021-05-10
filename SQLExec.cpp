@@ -174,7 +174,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
 
     Handles inserted_rows;
     try {
-        for (char* col : index_columns) {
+        for (char* col : *index_columns) {
             if (find(table_to_index_columns.begin(), table_to_index_columns.end(), Identifier(col)) == table_to_index_columns.end()) {
                 throw DbRelationError("Indexing column not found in table to index");
             } else {
