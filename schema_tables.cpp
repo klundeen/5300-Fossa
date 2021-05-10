@@ -8,19 +8,19 @@
 #include <iostream>
 
 void initialize_schema_tables() {
-    cout << "init Reach # 1" << endl;
+    std::cout << "init Reach # 1" << endl;
     Tables tables;
-    cout << "init Reach # 2" << endl;
+    std::cout << "init Reach # 2" << endl;
     tables.create_if_not_exists();
-    cout << "init Reach # 3" << endl;
+    std::cout << "init Reach # 3" << endl;
     tables.close();
-    cout << "init Reach # 4" << endl;
+    std::cout << "init Reach # 4" << endl;
     Columns columns;
-    cout << "init Reach # 5" << endl;
+    std::cout << "init Reach # 5" << endl;
     columns.create_if_not_exists();
-    cout << "init Reach # 6" << endl;
+    std::cout << "init Reach # 6" << endl;
     columns.close();
-    cout << "init Reach # 7" << endl;
+    std::cout << "init Reach # 7" << endl;
 }
 
 // Not terribly useful since the parser weeds most of these out
