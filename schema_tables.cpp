@@ -40,7 +40,7 @@ bool is_acceptable_identifier(Identifier identifier) {
 }
 
 bool is_acceptable_data_type(std::string dt) {
-    return dt == "INT" || dt == "TEXT";  // for now
+    return dt == "INT" || dt == "TEXT" || dt == "BOOLEAN";  // for now
 }
 
 
