@@ -163,13 +163,17 @@ QueryResult *SQLExec::create_table(const CreateStatement *statement) {
 }
 
 QueryResult *SQLExec::create_index(const CreateStatement *statement) {
+    cout << "DB Open Error start of create_index" << endl;
     string table_name = string(statement->tableName);
     string index_name = string(statement->indexName);
     string index_type = string(statement->indexType);
     string is_unique = (index_type == "BTREE")? "true" : "false";
     vector<char*>* index_columns = statement->indexColumns;
+    cout << "DB Open Error pre-call to get_table" << endl;
     DbRelation& table_to_index = tables->get_table(table_name);
+    cout << "DB Open Error post-call to get_table" << endl;
     ColumnNames table_to_index_columns = table_to_index.get_column_names();
+    cout << "DB Open Error post-call to get_column_names" << endl;
 
     int seq_in_index = 0;
 
