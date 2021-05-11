@@ -196,8 +196,6 @@ ValueDict *HeapTable::validate(const ValueDict *row) const {
  * @return handle of newly inserted row
  */
 Handle HeapTable::append(const ValueDict *row) {
-    std::cout << "seq_in_index: " << row->at("seq_in_index").n << std::endl;
-    std::cout << "column_name: " << row->at("column_name").s << std::endl;
     Dbt *data = marshal(row);
     SlottedPage *block = this->file.get(this->file.get_last_block_id());
     RecordID record_id;
