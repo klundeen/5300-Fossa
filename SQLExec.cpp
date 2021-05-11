@@ -166,13 +166,13 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     string table_name = string(statement->tableName);
     string index_name = string(statement->indexName);
     string index_type = string(statement->indexType);
-    string is_unique = (index_type == "BTREE")? "true" : "false";
+    int32_t is_unique = (index_type == "BTREE")? 1 : 0;
     vector<char*>* index_columns = statement->indexColumns;
     DbRelation& table_to_index = SQLExec::tables->get_table(table_name);
     ColumnNames table_to_index_columns = table_to_index.get_column_names();
     cout << "DB Open Error post-call to get_column_names" << endl;
 
-    int seq_in_index = 0;
+    int32_t seq_in_index = 0;
 
     Handles inserted_rows;
     try {
@@ -324,7 +324,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
 
     for(auto const &handle: *handles) {
         ValueDict *row = indices_handle.project(handle);
-        cout << "seq_in_index: " << to_string(row->at("seq_in_index").n) << endl;
+        cout << "seq_in_index: " << row->at("seq_in_index").n << endl;
         cout << "column_name: " << row->at("column_name").s << endl;
         rows->push_back(row);
     }
