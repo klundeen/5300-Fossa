@@ -196,11 +196,12 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
             }
         }
     } catch (exception &e) {
+        cout << "DbRelationError: " << e.what() << endl;
         for (Handle handle : inserted_rows) {
-            cout << "Opps, deleted row" << endl;
-            cout << "What the hell: " << e.what() << endl;
+            cout << "Oops, deleting row" << endl;
             SQLExec::indices->del(handle);
         }
+        throw e;
     }
     cout << "Number of rows in index table entry: " << to_string(inserted_rows.size()) << endl;
     cout << "DB Open Error pre-getIndex" << endl;
