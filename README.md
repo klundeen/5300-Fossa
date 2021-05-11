@@ -20,7 +20,7 @@ To run the program:
 ```
 
 
-### To run Milestone2:
+### To run Milestone4:
 On CS1:
 ```
 cd cpsc5300
