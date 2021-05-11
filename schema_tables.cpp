@@ -407,9 +407,11 @@ DbIndex &Indices::get_index(Identifier table_name, Identifier index_name) {
     ColumnNames column_names;
     bool is_hash, is_unique;
     get_columns(table_name, index_name, column_names, is_hash, is_unique);
+    std::cout << "DB Open Error: pre-get_table" << std::endl;
     DbRelation &table = Tables::get_table(table_name);
     DbIndex *index;
     if (is_hash) {
+        std::cout << "DB Open Error: is_hash" << std::endl;
         index = new DummyIndex(table, index_name, column_names, is_unique);  // FIXME - change to HashIndex
     } else {
         index = new DummyIndex(table, index_name, column_names, is_unique);  // FIXME - change to BTreeIndex
