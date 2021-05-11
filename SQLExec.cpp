@@ -316,7 +316,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     ValueDicts *rows = new ValueDicts;
 
     for(auto const &handle: *handles) {
-        ValueDict *row = indices_handle.project(handle, col_names);
+        ValueDict *row = indices_handle.project(handle, &col_names);
         rows->push_back(row);
     }
     delete handles;
