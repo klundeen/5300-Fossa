@@ -286,29 +286,29 @@ QueryResult *SQLExec::show(const ShowStatement *statement) {
 
 QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     DbRelation &indices_handle = SQLExec::tables->get_table(Indices::TABLE_NAME);
-    ColumnNames *col_names = new ColumnNames;
-    ColumnAttributes *col_attributes = new ColumnAttributes;
+    ColumnNames col_names;
+    ColumnAttributes col_attributes;
 
     ValueDict where;
     where["table_name"] = Value(statement->tableName);
 
-    col_names->push_back("table_name");
-    col_names->push_back("index_name");
-    col_names->push_back("seq_in_index");
-    col_names->push_back("column_name");
-    col_names->push_back("index_type");
-    col_names->push_back("is_unique");
+    col_names.push_back("table_name");
+    col_names.push_back("index_name");
+    col_names.push_back("seq_in_index");
+    col_names.push_back("column_name");
+    col_names.push_back("index_type");
+    col_names.push_back("is_unique");
 
     ColumnAttribute ca(ColumnAttribute::TEXT);
-    col_attributes->push_back(ca);  // table_name
-    col_attributes->push_back(ca);  // index_name
+    col_attributes.push_back(ca);  // table_name
+    col_attributes.push_back(ca);  // index_name
     ca.set_data_type(ColumnAttribute::INT);
-    col_attributes->push_back(ca);  // seq_in_index
+    col_attributes.push_back(ca);  // seq_in_index
     ca.set_data_type(ColumnAttribute::TEXT);
-    col_attributes->push_back(ca);  // column_name
-    col_attributes->push_back(ca);  // index_type
+    col_attributes.push_back(ca);  // column_name
+    col_attributes.push_back(ca);  // index_type
     ca.set_data_type(ColumnAttribute::BOOLEAN);
-    col_attributes->push_back(ca);  // is_unique
+    col_attributes.push_back(ca);  // is_unique
 
 
     Handles *handles = indices_handle.select(&where);
