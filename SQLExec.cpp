@@ -321,7 +321,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     }
     delete handles;
 
-    return new QueryResult(col_names, col_attributes, rows, "successfully returned " + to_string(n) + " rows");
+    return new QueryResult(&col_names, &col_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
 QueryResult *SQLExec::show_tables() {
