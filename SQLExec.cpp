@@ -185,12 +185,12 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
                 cout << "Index Column of Type: " << index_type << endl;
                 seq_in_index++;
                 ValueDict index_row;
-                index_row["table_name"] = table_name;
-                index_row["index_name"] = index_name;
-                index_row["seq_in_index"] = seq_in_index;
-                index_row["column_name"] = string(col);
-                index_row["index_type"] = index_type;
-                index_row["is_unique"] = is_unique;
+                index_row["table_name"] = Value(table_name);
+                index_row["index_name"] = Value(index_name);
+                index_row["seq_in_index"] = Value(seq_in_index);
+                index_row["column_name"] = Value(string(col));
+                index_row["index_type"] = Value(index_type);
+                index_row["is_unique"] = Value(is_unique);
                 // construct ValueDict for index row
                 inserted_rows.push_back(SQLExec::indices->insert(&index_row));
             }
