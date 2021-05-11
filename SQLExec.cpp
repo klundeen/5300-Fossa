@@ -168,11 +168,10 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     string index_type = string(statement->indexType);
     string is_unique = (index_type == "BTREE")? "true" : "false";
     vector<char*>* index_columns = statement->indexColumns;
-    DbRelation& table_to_index = tables->get_table(table_name);
+    DbRelation& table_to_index = SQLExec::tables->get_table(table_name);
     ColumnNames table_to_index_columns = table_to_index.get_column_names();
     cout << "DB Open Error post-call to get_column_names" << endl;
 
-    DbRelation &indices_handle = SQLExec::tables->get_table(Indices::TABLE_NAME);
     int seq_in_index = 0;
 
     Handles inserted_rows;
@@ -190,17 +189,18 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
                 index_row["index_type"] = index_type;
                 index_row["is_unique"] = is_unique;
                 // construct ValueDict for index row
-                inserted_rows.push_back(indices_handle.insert(&index_row));
+                inserted_rows.push_back(SQLExec::indices->insert(&index_row));
             }
         }
     } catch (exception &e) {
         for (Handle handle : inserted_rows) {
             cout << "Opps, deleted row" << endl;
-            indices->del(handle);
+            SQLExec::indices->del(handle);
         }
     }
+    delete
     cout << "DB Open Error pre-getIndex" << endl;
-    DbIndex& index = indices->get_index(table_name, index_name);
+    DbIndex& index = SQLExec::indices->get_index(table_name, index_name);
     cout << "DB Open Error point #1" << endl;
     index.create();
     return new QueryResult("created index " + index_name);
