@@ -253,6 +253,7 @@ string ParseTreeToString::drop(const DropStatement *stmt) {
             ret += "INDEX ";
             ret += stmt->indexName;
             ret += " FROM ";
+            break;
         default:
             ret += "? ";
     }
