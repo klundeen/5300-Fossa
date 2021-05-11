@@ -398,9 +398,10 @@ public:
 DbIndex &Indices::get_index(Identifier table_name, Identifier index_name) {
     // if they are asking about an index we've once constructed, then just return that one
     std::pair<Identifier, Identifier> cache_key(table_name, index_name);
-    if (Indices::index_cache.find(cache_key) != Indices::index_cache.end())
+    if (Indices::index_cache.find(cache_key) != Indices::index_cache.end()) {
         std::cout << "DB Open Error not in cache" << std::endl;
         return *Indices::index_cache[cache_key];
+    }
 
     // otherwise assume it is a DummyIndex (for now)
     ColumnNames column_names;
