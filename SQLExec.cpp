@@ -180,6 +180,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
             if (find(table_to_index_columns.begin(), table_to_index_columns.end(), Identifier(col)) == table_to_index_columns.end()) {
                 throw DbRelationError("Indexing column not found in table to index");
             } else {
+                cout << "Index Column added: " << string(col) << endl;
                 seq_in_index++;
                 ValueDict index_row;
                 index_row["table_name"] = table_name;
