@@ -1,23 +1,31 @@
 # 5300-Fossa
 
 ## Sprint Otoño Bruno and Hailey
-
-### To run Milestone1:
-
+Start by cloning the repo to CS1 from 
 ```
-rm -rf ~/cpsc5300/data/*
-cd ~/cpsc5300/5300-Fossa
-git checkout tags/Milestone1
-make clean
-@@ -25,6 +26,7 @@ make
-### to run Milestone2:
-
+git clone https://github.com/klundeen/5300-Fossa.git
 ```
+### To run Milestone 3:
+On CS1:
+```
+cd 5300-Fossa
+git checkout tags/Milestone3 
+make
+```
+To run the program:
+```
+./sql5300 ~/cpsc5300/data
+```
+
 
 ### To run Milestone2:
+On CS1:
 ```
-rm -rf ~/cpsc5300/data/*
-cd ~/cpsc5300/5300-Fossa
-git checkout tags/Milestone2
-make clean
+cd 5300-Fossa
+git checkout tags/Milestone4
+make
+```
+To run the program:
+```
+./sql5300 ~/cpsc5300/data
 ```
