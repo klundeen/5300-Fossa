@@ -348,6 +348,7 @@ void Indices::del(Handle handle) {
 // Return a list of column names and column attributes for given table.
 void Indices::get_columns(Identifier table_name, Identifier index_name, ColumnNames &column_names, bool &is_hash,
                           bool &is_unique) {
+    std::cout << "DB Open Error: in get_columns" << std::endl;
     // SELECT * FROM _indices WHERE table_name = <table_name> AND index_name = <index_name>
     ValueDict where;
     where["table_name"] = table_name;
@@ -406,6 +407,7 @@ DbIndex &Indices::get_index(Identifier table_name, Identifier index_name) {
     // otherwise assume it is a DummyIndex (for now)
     ColumnNames column_names;
     bool is_hash, is_unique;
+    std::cout << "DB Open Error: pre-get_columns" << std::endl;
     get_columns(table_name, index_name, column_names, is_hash, is_unique);
     std::cout << "DB Open Error: pre-get_table" << std::endl;
     DbRelation &table = Tables::get_table(table_name);
