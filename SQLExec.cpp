@@ -281,7 +281,35 @@ QueryResult *SQLExec::show(const ShowStatement *statement) {
 }
 
 QueryResult *SQLExec::show_index(const ShowStatement *statement) {
-    return new QueryResult("not implemented"); // FIXME
+    ColumnNames *col_names = new ColumnNames;
+    ColumnAttributes *col_attributes = new ColumnAttributes;
+
+    ValueDict where;
+    where["table_name"] = Value(statement->tableName);
+
+    col_names->push_back("table_name");
+    col_names->push_back("index_name");
+    col_names->push_back("seq_in_index");
+    col_names->push_back("column_name");
+    col_names->push_back("index_type");
+    col_names->push_back("is_unique");
+
+    col_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
+
+    Handles *handles = SQLExec::indices->select();
+    ValueDicts *rows = new ValueDicts;
+
+    for(auto const &handle: *handles) {
+        ValueDict *row = SQLExec::indices->project(handle, col_names);
+        Identifier table_name = row->at("index_name").s;
+        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME)
+            rows->push_back(row);
+        else
+            delete row;
+    }
+    delete handles;
+
+    return new QueryResult(col_names, col_attributes, rows, "success");
 }
 
 QueryResult *SQLExec::show_tables() {
