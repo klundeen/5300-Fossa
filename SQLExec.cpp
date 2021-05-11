@@ -182,12 +182,13 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
                 throw DbRelationError("Indexing column not found in table to index");
             } else {
                 cout << "Index Column added: " << string(col) << endl;
+                cout << "Index Column of Type: " << index_type << endl;
                 seq_in_index++;
                 ValueDict index_row;
                 index_row["table_name"] = table_name;
                 index_row["index_name"] = index_name;
-                index_row["column_name"] = string(col);
                 index_row["seq_in_index"] = seq_in_index;
+                index_row["column_name"] = string(col);
                 index_row["index_type"] = index_type;
                 index_row["is_unique"] = is_unique;
                 // construct ValueDict for index row
