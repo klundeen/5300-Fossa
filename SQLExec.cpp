@@ -172,6 +172,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     ColumnNames table_to_index_columns = table_to_index.get_column_names();
     cout << "DB Open Error post-call to get_column_names" << endl;
 
+    DbRelation &indices_handle = SQLExec::tables->get_table(Indices::TABLE_NAME);
     int seq_in_index = 0;
 
     Handles inserted_rows;
@@ -189,11 +190,12 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
                 index_row["index_type"] = index_type;
                 index_row["is_unique"] = is_unique;
                 // construct ValueDict for index row
-                inserted_rows.push_back(indices->insert(&index_row));
+                inserted_rows.push_back(indices_handle.insert(&index_row));
             }
         }
     } catch (exception &e) {
         for (Handle handle : inserted_rows) {
+            cout << "Opps, deleted row" << endl;
             indices->del(handle);
         }
     }
