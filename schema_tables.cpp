@@ -332,8 +332,8 @@ Handle Indices::insert(const ValueDict *row) {
     delete handles;
     if (!unique)
         throw DbRelationError("duplicate index " + row->at("table_name").s + " " + row->at("index_name").s);
-    cout << "insert -> seq_in_index: " << row->at("seq_in_index").n << endl;
-    cout << "insert -> column_name: " << row->at("column_name").s << endl;
+    std::cout << "insert -> seq_in_index: " << row->at("seq_in_index").n << std::endl;
+    std::cout << "insert -> column_name: " << row->at("column_name").s << std::endl;
     return HeapTable::insert(row);
 }
 
