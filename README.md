@@ -1,6 +1,8 @@
 # 5300-Fossa
 
-### to run Milestone1:
+## Sprint Otoño Bruno and Hailey
+
+### To run Milestone1:
 
 ```
 rm -rf ~/cpsc5300/data/*
@@ -11,7 +13,8 @@ make clean
 ### to run Milestone2:
 
 ```
-### to run Milestone2:
+
+### To run Milestone2:
 ```
 rm -rf ~/cpsc5300/data/*
 cd ~/cpsc5300/5300-Fossa
