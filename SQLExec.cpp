@@ -325,7 +325,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     for(auto const &handle: *handles) {
         ValueDict *row = indices_handle.project(handle);
         cout << "seq_in_index: " << to_string(row->at("seq_in_index").n) << endl;
-        cout << "column_name: " << row->at("column_name") << endl;
+        cout << "column_name: " << row->at("column_name").s << endl;
         rows->push_back(row);
     }
     delete handles;
