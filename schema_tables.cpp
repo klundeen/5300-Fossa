@@ -21,6 +21,9 @@ void initialize_schema_tables() {
     std::cout << "init Reach # 6" << std::endl;
     columns.close();
     std::cout << "init Reach # 7" << std::endl;
+    Indices indices;
+    indices.create_if_not_exists();
+    indices.close();
 }
 
 // Not terribly useful since the parser weeds most of these out
