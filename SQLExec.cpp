@@ -248,7 +248,7 @@ QueryResult *SQLExec::drop_table(const DropStatement *statement) {
 }
 
 QueryResult *SQLExec::drop_index(const DropStatement *statement) {
-    string table_name = string(statement->tableName);
+    string table_name = string(statement->name);
     string index_name = string(statement->indexName);
     DbIndex& index = indices->get_index(table_name, index_name);
     index.drop();
