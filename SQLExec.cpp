@@ -291,6 +291,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
 
     ValueDict where;
     where["table_name"] = Value(statement->tableName);
+    cout << "Table Name sent to select: " << statement->tableName << endl;
 
     col_names->push_back("table_name");
     col_names->push_back("index_name");
