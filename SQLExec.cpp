@@ -198,7 +198,6 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
             SQLExec::indices->del(handle);
         }
     }
-    delete
     cout << "DB Open Error pre-getIndex" << endl;
     DbIndex& index = SQLExec::indices->get_index(table_name, index_name);
     cout << "DB Open Error point #1" << endl;
