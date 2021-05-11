@@ -8,6 +8,8 @@ git clone https://github.com/klundeen/5300-Fossa.git
 ### To run Milestone 3:
 On CS1:
 ```
+cd cpsc5300
+rm -f data/*
 cd 5300-Fossa
 git checkout tags/Milestone3 
 make
@@ -21,6 +23,8 @@ To run the program:
 ### To run Milestone2:
 On CS1:
 ```
+cd cpsc5300
+rm -f data/*
 cd 5300-Fossa
 git checkout tags/Milestone4
 make
