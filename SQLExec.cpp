@@ -178,6 +178,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     try {
         for (char* col : *index_columns) {
             if (find(table_to_index_columns.begin(), table_to_index_columns.end(), Identifier(col)) == table_to_index_columns.end()) {
+                cout << "Index Column NOT FOUND: " << string(col) << endl;
                 throw DbRelationError("Indexing column not found in table to index");
             } else {
                 cout << "Index Column added: " << string(col) << endl;
