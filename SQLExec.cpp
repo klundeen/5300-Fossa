@@ -4,6 +4,7 @@
  * @see "Seattle University, CPSC5300, Spring 2021"
  */
 #include "SQLExec.h"
+#include <iostream>
 
 using namespace std;
 using namespace hsql;
@@ -196,6 +197,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
         }
     }
     DbIndex& index = indices->get_index(table_name, index_name);
+    cout << "DB Open Error point #1" << endl;
     index.create();
     return new QueryResult("created index " + index_name);
 }
