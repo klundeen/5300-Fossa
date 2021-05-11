@@ -197,6 +197,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     } catch (exception &e) {
         for (Handle handle : inserted_rows) {
             cout << "Opps, deleted row" << endl;
+            cout << "What the hell: " << e.what() << endl;
             SQLExec::indices->del(handle);
         }
     }
