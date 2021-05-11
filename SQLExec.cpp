@@ -285,7 +285,7 @@ QueryResult *SQLExec::show(const ShowStatement *statement) {
 }
 
 QueryResult *SQLExec::show_index(const ShowStatement *statement) {
-    DbRelation &indices_handle = SQLExec::indices->get_table(Indices::TABLE_NAME);
+    DbRelation &indices_handle = SQLExec::tables->get_table(Indices::TABLE_NAME);
     ColumnNames *col_names = new ColumnNames;
     ColumnAttributes *col_attributes = new ColumnAttributes;
 
