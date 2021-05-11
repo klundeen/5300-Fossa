@@ -312,6 +312,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
 
 
     Handles *handles = indices_handle.select(&where);
+    u_long n = handles->size();
     ValueDicts *rows = new ValueDicts;
 
     for(auto const &handle: *handles) {
@@ -320,7 +321,7 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     }
     delete handles;
 
-    return new QueryResult(col_names, col_attributes, rows, "success");
+    return new QueryResult(col_names, col_attributes, rows, "successfully returned " + to_string(n) + " rows");
 }
 
 QueryResult *SQLExec::show_tables() {
