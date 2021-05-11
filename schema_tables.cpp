@@ -8,19 +8,12 @@
 #include <iostream>
 
 void initialize_schema_tables() {
-    std::cout << "init Reach # 1" << std::endl;
     Tables tables;
-    std::cout << "init Reach # 2" << std::endl;
     tables.create_if_not_exists();
-    std::cout << "init Reach # 3" << std::endl;
     tables.close();
-    std::cout << "init Reach # 4" << std::endl;
     Columns columns;
-    std::cout << "init Reach # 5" << std::endl;
     columns.create_if_not_exists();
-    std::cout << "init Reach # 6" << std::endl;
     columns.close();
-    std::cout << "init Reach # 7" << std::endl;
     Indices indices;
     indices.create_if_not_exists();
     indices.close();
@@ -234,20 +227,17 @@ void Columns::create() {
     insert(&row);
     row["column_name"] = Value("is_unique");
     row["data_type"] = Value("BOOLEAN");
-    std::cout << "create reach #1" << std::endl;
     insert(&row);
 }
 
 // Manually check that (table_name, column_name) is unique.
 Handle Columns::insert(const ValueDict *row) {
     // Check that datatype is acceptable
-    std::cout << "create reach #2" << std::endl;
     if (!is_acceptable_identifier(row->at("table_name").s))
         throw DbRelationError("unacceptable table name '" + row->at("table_name").s + "'");
     if (!is_acceptable_identifier(row->at("column_name").s))
         throw DbRelationError("unacceptable column name '" + row->at("column_name").s + "'");
     if (!is_acceptable_data_type(row->at("data_type").s)) {
-        std::cout << "create reach #3" << std::endl;
         throw DbRelationError("unacceptable data type '" + row->at("data_type").s + "'");
     }
 
@@ -322,9 +312,7 @@ Handle Indices::insert(const ValueDict *row) {
     ValueDict where;
     where["table_name"] = row->at("table_name");
     where["index_name"] = row->at("index_name");
-    std::cout << "seq_in_index: " << std::to_string(row->at("seq_in_index").n) << ":" << std::endl;
     if (row->at("seq_in_index").n > 1) {
-        std::cout << "seq_in_index > 1: " << std::to_string(row->at("seq_in_index").n) << ":" << std::endl;
         where["column_name"] = row->at("column_name");  // check for duplicate columns on the same index
     }
     Handles *handles = select(&where);
@@ -332,8 +320,6 @@ Handle Indices::insert(const ValueDict *row) {
     delete handles;
     if (!unique)
         throw DbRelationError("duplicate index " + row->at("table_name").s + " " + row->at("index_name").s);
-    std::cout << "insert -> seq_in_index: " << row->at("seq_in_index").n << std::endl;
-    std::cout << "insert -> column_name: " << row->at("column_name").s << std::endl;
     return HeapTable::insert(row);
 }
 
@@ -356,18 +342,14 @@ void Indices::del(Handle handle) {
 // Return a list of column names and column attributes for given table.
 void Indices::get_columns(Identifier table_name, Identifier index_name, ColumnNames &column_names, bool &is_hash,
                           bool &is_unique) {
-    std::cout << "DB Open Error: in get_columns" << std::endl;
-    std::cout << "DB Open Error: table_name: " << table_name << " index_name: " << index_name << std::endl;
     // SELECT * FROM _indices WHERE table_name = <table_name> AND index_name = <index_name>
     ValueDict where;
     where["table_name"] = table_name;
     where["index_name"] = index_name;
-    std::cout << "DB Open Error: in get_columns - Pre select" << std::endl;
     Handles *handles = select(&where);
 
     Identifier colnames[DbIndex::MAX_COMPOSITE];
     uint size = 0;
-    std::cout << "DB Open Error: in get_columns - Pre forloop" << std::endl;
     for (auto const &handle: *handles) {
         ValueDict *row = project(handle);
 
@@ -411,20 +393,16 @@ DbIndex &Indices::get_index(Identifier table_name, Identifier index_name) {
     // if they are asking about an index we've once constructed, then just return that one
     std::pair<Identifier, Identifier> cache_key(table_name, index_name);
     if (Indices::index_cache.find(cache_key) != Indices::index_cache.end()) {
-        std::cout << "DB Open Error not in cache" << std::endl;
         return *Indices::index_cache[cache_key];
     }
 
     // otherwise assume it is a DummyIndex (for now)
     ColumnNames column_names;
     bool is_hash, is_unique;
-    std::cout << "DB Open Error: pre-get_columns" << std::endl;
     get_columns(table_name, index_name, column_names, is_hash, is_unique);
-    std::cout << "DB Open Error: pre-get_table" << std::endl;
     DbRelation &table = Tables::get_table(table_name);
     DbIndex *index;
     if (is_hash) {
-        std::cout << "DB Open Error: is_hash" << std::endl;
         index = new DummyIndex(table, index_name, column_names, is_unique);  // FIXME - change to HashIndex
     } else {
         index = new DummyIndex(table, index_name, column_names, is_unique);  // FIXME - change to BTreeIndex

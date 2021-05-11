@@ -170,7 +170,6 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     vector<char*>* index_columns = statement->indexColumns;
     DbRelation& table_to_index = SQLExec::tables->get_table(table_name);
     ColumnNames table_to_index_columns = table_to_index.get_column_names();
-    cout << "DB Open Error post-call to get_column_names" << endl;
 
     int32_t seq_in_index = 0;
 
@@ -178,11 +177,8 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
     try {
         for (uint i = 0; i < index_columns->size(); i++) {
             if (find(table_to_index_columns.begin(), table_to_index_columns.end(), Identifier(index_columns->at(i))) == table_to_index_columns.end()) {
-                cout << "Index Column NOT FOUND: " << string(index_columns->at(i)) << endl;
                 throw DbRelationError("Indexing column not found in table to index");
             } else {
-                cout << "Index Column added: " << string(index_columns->at(i)) << endl;
-                cout << "Index Column of Type: " << index_type << endl;
                 seq_in_index++;
                 ValueDict index_row;
                 index_row["table_name"] = Value(table_name);
@@ -196,17 +192,12 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
             }
         }
     } catch (exception &e) {
-        cout << "DbRelationError: " << e.what() << endl;
         for (Handle handle : inserted_rows) {
-            cout << "Oops, deleting row" << endl;
             SQLExec::indices->del(handle);
         }
         throw;
     }
-    cout << "Number of rows in index table entry: " << to_string(inserted_rows.size()) << endl;
-    cout << "DB Open Error pre-getIndex" << endl;
     DbIndex& index = SQLExec::indices->get_index(table_name, index_name);
-    cout << "DB Open Error point #1" << endl;
     index.create();
     return new QueryResult("created index " + index_name);
 }
@@ -297,7 +288,6 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
 
     ValueDict where;
     where["table_name"] = Value(statement->tableName);
-    cout << "Table Name sent to select: " << statement->tableName << endl;
 
     col_names->push_back("table_name");
     col_names->push_back("index_name");
@@ -324,8 +314,6 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
 
     for(auto const &handle: *handles) {
         ValueDict *row = SQLExec::indices->project(handle);
-        cout << "seq_in_index: " << row->at("seq_in_index").n << endl;
-        cout << "column_name: " << row->at("column_name").s << endl;
         rows->push_back(row);
     }
     delete handles;
