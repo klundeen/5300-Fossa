@@ -285,6 +285,7 @@ QueryResult *SQLExec::show(const ShowStatement *statement) {
 }
 
 QueryResult *SQLExec::show_index(const ShowStatement *statement) {
+    DbRelation &indices_handle = SQLExec::indices->get_table(Indices::TABLE_NAME);
     ColumnNames *col_names = new ColumnNames;
     ColumnAttributes *col_attributes = new ColumnAttributes;
 
@@ -298,18 +299,24 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     col_names->push_back("index_type");
     col_names->push_back("is_unique");
 
-    col_attributes->push_back(ColumnAttribute(ColumnAttribute::TEXT));
+    ColumnAttribute ca(ColumnAttribute::TEXT);
+    col_attributes->push_back(ca);  // table_name
+    col_attributes->push_back(ca);  // index_name
+    ca.set_data_type(ColumnAttribute::INT);
+    col_attributes->push_back(ca);  // seq_in_index
+    ca.set_data_type(ColumnAttribute::TEXT);
+    col_attributes->push_back(ca);  // column_name
+    col_attributes->push_back(ca);  // index_type
+    ca.set_data_type(ColumnAttribute::BOOLEAN);
+    col_attributes->push_back(ca);  // is_unique
 
-    Handles *handles = SQLExec::indices->select();
+
+    Handles *handles = indices_handle.select(&where);
     ValueDicts *rows = new ValueDicts;
 
     for(auto const &handle: *handles) {
-        ValueDict *row = SQLExec::indices->project(handle, col_names);
-        Identifier table_name = row->at("index_name").s;
-        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME)
-            rows->push_back(row);
-        else
-            delete row;
+        ValueDict *row = indices_handle.project(handle, col_names);
+        rows->push_back(row);
     }
     delete handles;
 
