@@ -349,14 +349,17 @@ void Indices::del(Handle handle) {
 void Indices::get_columns(Identifier table_name, Identifier index_name, ColumnNames &column_names, bool &is_hash,
                           bool &is_unique) {
     std::cout << "DB Open Error: in get_columns" << std::endl;
+    std::cout << "DB Open Error: table_name: " << table_name << " index_name: " << index_name << std::endl;
     // SELECT * FROM _indices WHERE table_name = <table_name> AND index_name = <index_name>
     ValueDict where;
     where["table_name"] = table_name;
     where["index_name"] = index_name;
+    std::cout << "DB Open Error: in get_columns - Pre select" << std::endl;
     Handles *handles = select(&where);
 
     Identifier colnames[DbIndex::MAX_COMPOSITE];
     uint size = 0;
+    std::cout << "DB Open Error: in get_columns - Pre forloop" << std::endl;
     for (auto const &handle: *handles) {
         ValueDict *row = project(handle);
 
