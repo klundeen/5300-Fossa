@@ -201,7 +201,7 @@ QueryResult *SQLExec::create_index(const CreateStatement *statement) {
             cout << "Oops, deleting row" << endl;
             SQLExec::indices->del(handle);
         }
-        throw e;
+        throw;
     }
     cout << "Number of rows in index table entry: " << to_string(inserted_rows.size()) << endl;
     cout << "DB Open Error pre-getIndex" << endl;
