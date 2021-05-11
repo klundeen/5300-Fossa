@@ -322,8 +322,10 @@ Handle Indices::insert(const ValueDict *row) {
     ValueDict where;
     where["table_name"] = row->at("table_name");
     where["index_name"] = row->at("index_name");
-    if (row->at("seq_in_index").n > 1)
+    cout << "seq_in_index: " << row->at("seq_in_index") << ":" << row->at("seq_in_index").n;
+    if (row->at("seq_in_index").n > 1) {
         where["column_name"] = row->at("column_name");  // check for duplicate columns on the same index
+    }
     Handles *handles = select(&where);
     bool unique = handles->empty();
     delete handles;
