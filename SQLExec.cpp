@@ -317,12 +317,12 @@ QueryResult *SQLExec::show_index(const ShowStatement *statement) {
     col_attributes->push_back(ca);  // is_unique
 
 
-    Handles *handles = SQLExec::indices.select(&where);
+    Handles *handles = SQLExec::indices->select(&where);
     u_long n = handles->size();
     ValueDicts *rows = new ValueDicts;
 
     for(auto const &handle: *handles) {
-        ValueDict *row = SQLExec::indices.project(handle);
+        ValueDict *row = SQLExec::indices->project(handle);
         cout << "seq_in_index: " << row->at("seq_in_index").n << endl;
         cout << "column_name: " << row->at("column_name").s << endl;
         rows->push_back(row);
