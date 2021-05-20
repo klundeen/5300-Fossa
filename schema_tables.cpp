@@ -5,7 +5,7 @@
  */
 #include "schema_tables.h"
 #include "ParseTreeToString.h"
-#include <iostream>
+
 
 void initialize_schema_tables() {
     Tables tables;
@@ -17,6 +17,7 @@ void initialize_schema_tables() {
     Indices indices;
     indices.create_if_not_exists();
     indices.close();
+
 }
 
 // Not terribly useful since the parser weeds most of these out
@@ -237,9 +238,8 @@ Handle Columns::insert(const ValueDict *row) {
         throw DbRelationError("unacceptable table name '" + row->at("table_name").s + "'");
     if (!is_acceptable_identifier(row->at("column_name").s))
         throw DbRelationError("unacceptable column name '" + row->at("column_name").s + "'");
-    if (!is_acceptable_data_type(row->at("data_type").s)) {
+    if (!is_acceptable_data_type(row->at("data_type").s))
         throw DbRelationError("unacceptable data type '" + row->at("data_type").s + "'");
-    }
 
     // Try SELECT * FROM _columns WHERE table_name = row["table_name"] AND column_name = column_name["column_name"]
     // and it should return nothing
@@ -312,9 +312,8 @@ Handle Indices::insert(const ValueDict *row) {
     ValueDict where;
     where["table_name"] = row->at("table_name");
     where["index_name"] = row->at("index_name");
-    if (row->at("seq_in_index").n > 1) {
+    if (row->at("seq_in_index").n > 1)
         where["column_name"] = row->at("column_name");  // check for duplicate columns on the same index
-    }
     Handles *handles = select(&where);
     bool unique = handles->empty();
     delete handles;
@@ -330,6 +329,7 @@ void Indices::del(Handle handle) {
     ValueDict *row = project(handle);
     Identifier table_name = row->at("table_name").s;
     Identifier index_name = row->at("index_name").s;
+    delete row;
     std::pair<Identifier, Identifier> cache_key(table_name, index_name);
     if (Indices::index_cache.find(cache_key) != Indices::index_cache.end()) {
         DbIndex *index = Indices::index_cache.at(cache_key);
@@ -392,9 +392,8 @@ public:
 DbIndex &Indices::get_index(Identifier table_name, Identifier index_name) {
     // if they are asking about an index we've once constructed, then just return that one
     std::pair<Identifier, Identifier> cache_key(table_name, index_name);
-    if (Indices::index_cache.find(cache_key) != Indices::index_cache.end()) {
+    if (Indices::index_cache.find(cache_key) != Indices::index_cache.end())
         return *Indices::index_cache[cache_key];
-    }
 
     // otherwise assume it is a DummyIndex (for now)
     ColumnNames column_names;
