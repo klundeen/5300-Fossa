@@ -156,46 +156,56 @@ QueryResult *SQLExec::insert(const InsertStatement *statement) {
 }
 
 
-//FIXME
-/*ValueDict* get_where_conjuction(hsql::Expr *expression, ColumnNames *col_names){
+ValueDict* get_where_conjunction(hsql::Expr *expr,const ColumnNames *columnNames){
+    //Pull out conjunctions of equality predicates from parse tree.
+    ValueDict *row=new ValueDict;
 
-  ValueDict *where = new ValueDict;
+    switch (expr->opType) {
 
-  if(expression == nullptr){
-    return where;
-  }
+        case Expr::AND: {
+            ValueDict *res = get_where_conjunction(expr->expr, columnNames);
 
-  switch(expression->opType){
-  case Expr::AND:{
-    
+            if (!res->empty()) {
+                row->insert(res->begin(), res->end());
+            }
 
+            res = get_where_conjunction(expr->expr2, columnNames);
+            row->insert(res->begin(), res->end());
+        }
+            break;
 
-
-
-  }
-  case Expr::SIMPLE_OP:{
-    if(expression->opChar == '='){
-
-
-      
+        case Expr::SIMPLE_OP:{
 
 
+            if(expr->opChar != '='){
+                throw DbRelationError("Only = operator is supported at the moment");
+            }
+            Identifier column=expr->name;
+            if (find(columnNames->begin(), columnNames->end(), column) == columnNames->end()){
+                throw DbRelationError(" Column is not present in the table");
+            }
+
+            if(expr->expr2->type == kExprLiteralInt){
+                row->at(column)=Value(expr->expr2->ival);
+            }
+            else if(expr->expr2->type == kExprLiteralString){
+                row->at(column)=Value(expr->expr2->name);
+            }
+            else{
+                throw DbRelationError("Only Int & String Types are supported");
+            }
+
+        }
+            break;
+        default:
+            throw DbRelationError("only AND , = are supported");
+            break;
     }
-    else{
 
-      throw SQLExecError("Only equality predicates currently supported");
-    }
+    return row;
 
-  }
-  default:
-    throw SQLExecError("Operator not supported");
-  
 
-  }
-  return where;
-
-  }*/
-
+}
 QueryResult *SQLExec::del(const DeleteStatement *statement) {
 
   Identifier table_name = statement->tableName;
@@ -208,7 +218,7 @@ QueryResult *SQLExec::del(const DeleteStatement *statement) {
   const ColumnNames &table_columns = table.get_column_names();
   table_column = table_columns;
 
-  where = get_where_conjuction(expression, &table_column);
+  where = get_where_conjunction(expression, &table_column);
 
   //creating evalplan
   EvalPlan *plan = new EvalPlan(table);
@@ -242,8 +252,53 @@ QueryResult *SQLExec::del(const DeleteStatement *statement) {
   return new QueryResult("Successfully deleted " + to_string(h_size) + " rows from " + table_name + suffix);  // FIXME
 }
 
+
+
 QueryResult *SQLExec::select(const SelectStatement *statement) {
-    return new QueryResult("SELECT statement not yet implemented");  // FIXME
+
+    Identifier table_name = statement->fromTable->name;
+    //Identifier  table_name = table_names[0];
+    DbRelation &table = SQLExec::tables->get_table(table_name);
+
+    ColumnNames *query_columns=new ColumnNames;
+    ColumnAttributes *query_attributes=new ColumnAttributes;
+
+    //start base of plan at a TableScan
+    EvalPlan *plan = new EvalPlan(table);
+
+    if(statement->selectList->at(0)->type == kExprStar){
+        *query_columns = table.get_column_names();
+        *query_attributes = table.get_column_attributes();
+        plan = new EvalPlan(EvalPlan::ProjectAll,plan);
+    }else{
+        for(auto const &col: *statement->selectList){
+            query_columns->push_back(col->name);
+        }
+        *query_attributes=table.get_column_attributes();
+        plan=new EvalPlan(query_columns,plan);
+
+    }
+
+    ColumnNames columnNames;
+    for(auto const col:table.get_column_names()){
+        columnNames.push_back(col);
+    }
+    ValueDict *where;
+    where=get_where_conjunction(statement->whereClause,&columnNames);
+
+    //enclose that in a Select if we have a where clause
+    if(statement->whereClause != nullptr){
+        plan= new EvalPlan(where,plan);
+    }
+
+
+    // optimize the plan and evaluate the optimized plan
+    EvalPlan *optimized = plan->optimize();
+
+    //execute the plan
+    ValueDicts* rows=optimized->evaluate();
+
+    return new QueryResult(query_columns,query_attributes,rows,"successfully returned "+to_string(rows->size())+"rows");
 }
 
 void
