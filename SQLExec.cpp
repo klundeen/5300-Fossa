@@ -156,47 +156,46 @@ QueryResult *SQLExec::insert(const InsertStatement *statement) {
 }
 
 
-ValueDict* get_where_conjunction(hsql::Expr *expr,const ColumnNames *columnNames){
+ValueDict* get_where_conjunction(const hsql::Expr *expr,const ColumnNames *columnNames){
     //Pull out conjunctions of equality predicates from parse tree.
+
+    if(expr->type != kExprOperator)
+        throw DbRelationError("Operator is not supported");
     ValueDict *row=new ValueDict;
 
     switch (expr->opType) {
-
         case Expr::AND: {
             ValueDict *res = get_where_conjunction(expr->expr, columnNames);
-
             if (!res->empty()) {
                 row->insert(res->begin(), res->end());
             }
-
             res = get_where_conjunction(expr->expr2, columnNames);
             row->insert(res->begin(), res->end());
-        }
+
             break;
+        }
 
-        case Expr::SIMPLE_OP:{
+        case Expr::SIMPLE_OP: {
 
-
-            if(expr->opChar != '='){
+            if (expr->opChar != '=') {
                 throw DbRelationError("Only = operator is supported at the moment");
             }
-            Identifier column=expr->name;
-            if (find(columnNames->begin(), columnNames->end(), column) == columnNames->end()){
+            Identifier column = expr->expr->name;
+            if (find(columnNames->begin(), columnNames->end(), column) == columnNames->end()) {
                 throw DbRelationError(" Column is not present in the table");
             }
 
-            if(expr->expr2->type == kExprLiteralInt){
-                row->at(column)=Value(expr->expr2->ival);
-            }
-            else if(expr->expr2->type == kExprLiteralString){
-                row->at(column)=Value(expr->expr2->name);
-            }
-            else{
+            if (expr->expr2->type == kExprLiteralInt) {
+                row->insert(pair<Identifier,Value>(column,Value(expr->expr2->ival)));
+            } else if (expr->expr2->type == kExprLiteralString) {
+                row->insert(pair<Identifier,Value>(column,Value(expr->expr2->name)));
+            } else {
                 throw DbRelationError("Only Int & String Types are supported");
             }
 
-        }
+
             break;
+        }
         default:
             throw DbRelationError("only AND , = are supported");
             break;
@@ -259,12 +258,20 @@ QueryResult *SQLExec::select(const SelectStatement *statement) {
     Identifier table_name = statement->fromTable->name;
     //Identifier  table_name = table_names[0];
     DbRelation &table = SQLExec::tables->get_table(table_name);
+    ColumnNames columnNames;
+    for(auto const col:table.get_column_names()){
+        columnNames.push_back(col);
+    }
+    //start base of plan at a TableScan
+    EvalPlan *plan = new EvalPlan(table);
+
+    //enclose that in a Select if we have a where clause
+    if(statement->whereClause != nullptr){
+        plan= new EvalPlan(get_where_conjunction(statement->whereClause,&columnNames),plan);
+    }
 
     ColumnNames *query_columns=new ColumnNames;
     ColumnAttributes *query_attributes=new ColumnAttributes;
-
-    //start base of plan at a TableScan
-    EvalPlan *plan = new EvalPlan(table);
 
     if(statement->selectList->at(0)->type == kExprStar){
         *query_columns = table.get_column_names();
@@ -279,26 +286,12 @@ QueryResult *SQLExec::select(const SelectStatement *statement) {
 
     }
 
-    ColumnNames columnNames;
-    for(auto const col:table.get_column_names()){
-        columnNames.push_back(col);
-    }
-    ValueDict *where;
-    where=get_where_conjunction(statement->whereClause,&columnNames);
-
-    //enclose that in a Select if we have a where clause
-    if(statement->whereClause != nullptr){
-        plan= new EvalPlan(where,plan);
-    }
-
-
     // optimize the plan and evaluate the optimized plan
     EvalPlan *optimized = plan->optimize();
-
     //execute the plan
     ValueDicts* rows=optimized->evaluate();
 
-    return new QueryResult(query_columns,query_attributes,rows,"successfully returned "+to_string(rows->size())+"rows");
+    return new QueryResult(query_columns,query_attributes,rows,"successfully returned "+to_string(rows->size())+" rows");
 }
 
 void
