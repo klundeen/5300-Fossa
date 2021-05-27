@@ -200,7 +200,6 @@ QueryResult *SQLExec::del(const DeleteStatement *statement) {
   
   Identifier table_name = statement->tableName;
   ColumnNames table_column;
-  //  ValueDict *where = new ValueDict;
   Expr *expression = statement->expr;
   
   
@@ -224,9 +223,7 @@ QueryResult *SQLExec::del(const DeleteStatement *statement) {
   //remove from indices
   auto index_names = SQLExec::indices->get_index_names(table_name);
   for(Identifier index_name: index_names){
-    //DbIndex &index = SQLExec::indices->get_index(table_name, index_name);
     for(auto const &handle: *handles){
-      //for(unsigned int i = 0; i < i_size; i++){
       DbIndex &index = SQLExec::indices->get_index(table_name, index_name);
       index.del(handle);
     }
