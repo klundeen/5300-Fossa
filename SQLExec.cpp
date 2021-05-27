@@ -92,196 +92,199 @@ QueryResult *SQLExec::execute(const SQLStatement *statement) {
 }
 
 QueryResult *SQLExec::insert(const InsertStatement *statement) {
-  Identifier table_name = statement->tableName;
-  ColumnNames col_names;
-  ColumnAttributes col_attributes;
-  unsigned int count = 0;
-  ValueDict row;
+    Identifier table_name = statement->tableName;
+    ColumnNames col_names;
+    ColumnAttributes col_attributes;
+    unsigned int count = 0;
+    ValueDict row;
 
-  DbRelation &table = SQLExec::tables->get_table(table_name);
-  const ColumnNames &table_columns = table.get_column_names();
-  const ColumnAttributes &ca = table.get_column_attributes();
-  col_attributes = ca;
+    DbRelation &table = SQLExec::tables->get_table(table_name);
+    const ColumnNames &table_columns = table.get_column_names();
+    const ColumnAttributes &ca = table.get_column_attributes();
+    col_attributes = ca;
 
-  if(statement->columns == nullptr){
-    //get column names from table
-    for(auto const col_name: table_columns){
-      col_names.push_back(col_name);
+    if (statement->columns == nullptr) {
+        //get column names from table
+        for (auto const col_name: table_columns) {
+            col_names.push_back(col_name);
+        }
+    } else {
+        //get column names from statement
+        for (auto const col_name: *statement->columns) {
+            col_names.push_back(col_name);
+        }
     }
-  }
-  else{
-    //get column names from statement
-    for(auto const col_name: *statement->columns){
-      col_names.push_back(col_name); 
-    }
-  }
-  
-  //do the insertion
-  for(auto const& value: *statement->values){
-    if(col_attributes[count].get_data_type() == ColumnAttribute::INT){
-      row[col_names[count]] = Value(value->ival);
-      count++;
-    }
-    else if(col_attributes[count].get_data_type() == ColumnAttribute::TEXT){
-      row[col_names[count]] = Value(value->name);
-      count++;
-    }
-    else{
-      throw SQLExecError("Dont know how to handle this insert data type");
-    }
-  }  
-  
-  Handle t_insert = table.insert(&row);
-  
-  //add to indices
-  IndexNames index_names = SQLExec::indices->get_index_names(table_name);
-  for(Identifier index_name: index_names){
-    DbIndex &index = SQLExec::indices->get_index(table_name, index_name);
-    index.insert(t_insert);
-  }
 
-  u_long message = index_names.size();
-  string suffix =  " and " + to_string(message) + " indices";
-  
-  return new QueryResult("Successfully inserted 1 row into " + table_name + suffix);
+    //do the insertion
+    for (auto const &value: *statement->values) {
+        if (col_attributes[count].get_data_type() == ColumnAttribute::INT) {
+            row[col_names[count]] = Value(value->ival);
+            count++;
+        } else if (col_attributes[count].get_data_type() == ColumnAttribute::TEXT) {
+            row[col_names[count]] = Value(value->name);
+            count++;
+        } else {
+            throw SQLExecError("Dont know how to handle this insert data type");
+        }
+    }
+
+    Handle t_insert = table.insert(&row);
+
+    //add to indices
+    IndexNames index_names = SQLExec::indices->get_index_names(table_name);
+    for (Identifier index_name: index_names) {
+        DbIndex &index = SQLExec::indices->get_index(table_name, index_name);
+        index.insert(t_insert);
+    }
+
+    u_long message = index_names.size();
+    string suffix = " and " + to_string(message) + " indices";
+
+    return new QueryResult("Successfully inserted 1 row into " + table_name + suffix);
 }
 
 
-ValueDict* get_where_conjunction(const hsql::Expr *expr,const ColumnNames *columnNames){
+ValueDict *get_where_conjunction(const hsql::Expr *expr, const ColumnNames *columnNames) {
     //Pull out conjunctions of equality predicates from parse tree.
 
-  if(expr->type != kExprOperator)
-    throw DbRelationError("Operator is not supported");
-  ValueDict *row=new ValueDict;
-  
-  switch (expr->opType) {
-  case Expr::AND: {
-    ValueDict *res = get_where_conjunction(expr->expr, columnNames);
-    if (!res->empty()) {
-      row->insert(res->begin(), res->end());
+    if (expr->type != kExprOperator)
+        throw DbRelationError("Operator is not supported");
+    ValueDict *row = new ValueDict;
+
+    switch (expr->opType) {
+
+        case Expr::AND: {
+            ValueDict *res = get_where_conjunction(expr->expr, columnNames);
+            if (!res->empty()) {
+                row->insert(res->begin(), res->end());
+            }
+            res = get_where_conjunction(expr->expr2, columnNames);
+            row->insert(res->begin(), res->end());
+
+            break;
+        }
+
+        case Expr::SIMPLE_OP: {
+
+            if (expr->opChar != '=') {
+                throw DbRelationError("Only = operator is supported at the moment");
+            }
+            Identifier column = expr->expr->name;
+            if (find(columnNames->begin(), columnNames->end(), column) == columnNames->end()) {
+                throw DbRelationError(" Column is not present in the table");
+            }
+
+            if (expr->expr2->type == kExprLiteralInt) {
+                row->insert(pair<Identifier, Value>(column, Value(expr->expr2->ival)));
+            } else if (expr->expr2->type == kExprLiteralString) {
+                row->insert(pair<Identifier, Value>(column, Value(expr->expr2->name)));
+            } else {
+                throw DbRelationError("Only Int & String Types are supported");
+            }
+
+
+            break;
+        }
+        default:
+            throw DbRelationError("only AND , = are supported");
+            break;
     }
-    res = get_where_conjunction(expr->expr2, columnNames);
-    row->insert(res->begin(), res->end());
-    
-    break;
-  }
-    
-  case Expr::SIMPLE_OP: {
-    
-    if (expr->opChar != '=') {
-      throw DbRelationError("Only = operator is supported at the moment");
-    }
-    Identifier column = expr->expr->name;
-    if (find(columnNames->begin(), columnNames->end(), column) == columnNames->end()) {
-      throw DbRelationError(" Column is not present in the table");
-    }
-    
-    if (expr->expr2->type == kExprLiteralInt) {
-      row->insert(pair<Identifier,Value>(column,Value(expr->expr2->ival)));
-    } else if (expr->expr2->type == kExprLiteralString) {
-      row->insert(pair<Identifier,Value>(column,Value(expr->expr2->name)));
-    } else {
-      throw DbRelationError("Only Int & String Types are supported");
-    }
-    
-    
-    break;
-  }
-  default:
-    throw DbRelationError("only AND , = are supported");
-    break;
-  }
-  
-  return row;
-  
-  
+
+    return row;
+
+
 }
+
 QueryResult *SQLExec::del(const DeleteStatement *statement) {
-  
-  Identifier table_name = statement->tableName;
-  ColumnNames table_column;
-  Expr *expression = statement->expr;
-  
-  
-  DbRelation &table = SQLExec::tables->get_table(table_name);
-  const ColumnNames &table_columns = table.get_column_names();
-  table_column = table_columns;
+
+    Identifier table_name = statement->tableName;
+    ColumnNames table_column;
+    Expr *expression = statement->expr;
 
 
-  //creating evalplan
-  EvalPlan *plan = new EvalPlan(table);
-  if(expression != nullptr){
-    plan = new EvalPlan(get_where_conjunction(expression, &table_column), plan);
-  }
+    DbRelation &table = SQLExec::tables->get_table(table_name);
+    const ColumnNames &table_columns = table.get_column_names();
+    table_column = table_columns;
 
-  //getting list of handles
-  EvalPlan *optimized = plan->optimize();
-  EvalPipeline pipeline = optimized->pipeline();
-  Handles *handles = pipeline.second;
 
-    
-  //remove from indices
-  auto index_names = SQLExec::indices->get_index_names(table_name);
-  for(Identifier index_name: index_names){
-    for(auto const &handle: *handles){
-      DbIndex &index = SQLExec::indices->get_index(table_name, index_name);
-      index.del(handle);
+    //creating evalplan
+    EvalPlan *plan = new EvalPlan(table);
+    if (expression != nullptr) {
+        plan = new EvalPlan(get_where_conjunction(expression, &table_column), plan);
     }
-  }
-  
-  u_long h_size = handles->size();
-  u_long i_size = index_names.size();
-  string suffix = " and " + to_string(i_size) + " indices";
-  
-  //remove from table
-  for(auto const &handle: *handles){
-    table.del(handle);
-  }
 
-  return new QueryResult("Successfully deleted " + to_string(h_size) + " rows from " + table_name + suffix);  // FIXME
+    //getting list of handles
+    EvalPlan *optimized = plan->optimize();
+    EvalPipeline pipeline = optimized->pipeline();
+    Handles *handles = pipeline.second;
+
+
+    //remove from indices
+    auto index_names = SQLExec::indices->get_index_names(table_name);
+    for (Identifier index_name: index_names) {
+        for (auto const &handle: *handles) {
+            DbIndex &index = SQLExec::indices->get_index(table_name, index_name);
+            index.del(handle);
+        }
+    }
+
+    u_long h_size = handles->size();
+    u_long i_size = index_names.size();
+    string suffix = " and " + to_string(i_size) + " indices";
+
+    //remove from table
+    for (auto const &handle: *handles) {
+        table.del(handle);
+    }
+
+    return new QueryResult("Successfully deleted " + to_string(h_size) + " rows from " + table_name + suffix);
 }
-
 
 
 QueryResult *SQLExec::select(const SelectStatement *statement) {
 
     Identifier table_name = statement->fromTable->name;
-    //Identifier  table_name = table_names[0];
     DbRelation &table = SQLExec::tables->get_table(table_name);
+
     ColumnNames columnNames;
-    for(auto const col:table.get_column_names()){
+    for (auto const col:table.get_column_names()) {
         columnNames.push_back(col);
     }
+
     //start base of plan at a TableScan
     EvalPlan *plan = new EvalPlan(table);
 
     //enclose that in a Select if we have a where clause
-    if(statement->whereClause != nullptr){
-        plan= new EvalPlan(get_where_conjunction(statement->whereClause,&columnNames),plan);
+    if (statement->whereClause != nullptr) {
+        plan = new EvalPlan(get_where_conjunction(statement->whereClause, &columnNames), plan);
     }
 
-    ColumnNames *query_columns=new ColumnNames;
-    ColumnAttributes *query_attributes=new ColumnAttributes;
+    ColumnNames *query_columns = new ColumnNames;
+    ColumnAttributes *query_attributes = new ColumnAttributes;
 
-    if(statement->selectList->at(0)->type == kExprStar){
+    // if select *, project all columns
+    if (statement->selectList->at(0)->type == kExprStar) {
         *query_columns = table.get_column_names();
         *query_attributes = table.get_column_attributes();
-        plan = new EvalPlan(EvalPlan::ProjectAll,plan);
-    }else{
-        for(auto const &col: *statement->selectList){
+        plan = new EvalPlan(EvalPlan::ProjectAll, plan);
+    } else {
+        //project only the columns selected
+        for (auto const &col: *statement->selectList) {
             query_columns->push_back(col->name);
         }
-        *query_attributes=table.get_column_attributes();
-        plan=new EvalPlan(query_columns,plan);
+        *query_attributes = table.get_column_attributes();
+        plan = new EvalPlan(query_columns, plan);
 
     }
 
     // optimize the plan and evaluate the optimized plan
     EvalPlan *optimized = plan->optimize();
-    //execute the plan
-    ValueDicts* rows=optimized->evaluate();
 
-    return new QueryResult(query_columns,query_attributes,rows,"successfully returned "+to_string(rows->size())+" rows");
+    //execute the plan
+    ValueDicts *rows = optimized->evaluate();
+
+    return new QueryResult(query_columns, query_attributes, rows,
+                           "successfully returned " + to_string(rows->size()) + " rows");
 }
 
 void
