@@ -44,15 +44,16 @@ void BTreeIndex::drop() {
 
 // Open existing index. Enables: lookup, range, insert, delete, update.
 void BTreeIndex::open() {
-    if (closed) {
-        file.open();
-        stat = new BTreeStat(file, STAT, key_profile);
-        if (stat->get_height() == 1)
-            root = new BTreeLeaf(file, stat->get_root_id(), key_profile, false);
-        else
-            root = new BTreeInterior(file, stat->get_root_id(), key_profile, false);
-        closed = true;
-    }
+  if (closed) {
+    file.open();
+    
+    stat = new BTreeStat(file, STAT, key_profile);
+    if (stat->get_height() == 1)
+      root = new BTreeLeaf(file, stat->get_root_id(), key_profile, false);
+    else
+      root = new BTreeInterior(file, stat->get_root_id(), key_profile, false);
+    closed = true;
+  }
 }
 
 // Closes the index. Disables: lookup, range, insert, delete, update.
@@ -70,10 +71,31 @@ void BTreeIndex::close() {
 // Find all the rows whose columns are equal to key. Assumes key is a dictionary whose keys are the column
 // names in the index. Returns a list of row handles.
 Handles *BTreeIndex::lookup(ValueDict *key_dict) const {
-    // FIXME
-    return nullptr;
+  KeyValue *key_value = this->tkey(key_dict);
+
+  std:: cout << "not recursive loopup" << std::endl;
+  return _lookup(root, stat->get_height(), key_value);
 }
 
+Handles *BTreeIndex::_lookup(BTreeNode *node, uint height, const KeyValue *key) const {
+  Handles *handles = new Handles;
+
+  if (height == 1){
+    
+    auto *leaf = dynamic_cast<BTreeLeaf *>(node);
+    handles->push_back(leaf->find_eq(key));
+    std::cout << "return leaf" << std::endl;
+    return handles;
+  }
+    
+  else{
+    auto *interior = dynamic_cast<BTreeInterior *>(node);
+    std::cout << "return interior" << std::endl;
+    return _lookup(interior->find(key, height), height -1, key);
+  }
+
+}
+  
 Handles *BTreeIndex::range(ValueDict *min_key, ValueDict *max_key) const {
     throw DbRelationError("Don't know how to do a range query on Btree index yet");
     // FIXME
@@ -141,14 +163,19 @@ void BTreeIndex::build_key_profile() {
 }
 
 bool test_btree() {
-    ColumnNames column_names;
+  std::cout << "test start" << std::endl;
+  ColumnNames column_names;
     column_names.push_back("a");
     column_names.push_back("b");
     ColumnAttributes column_attributes;
     column_attributes.push_back(ColumnAttribute(ColumnAttribute::INT));
     column_attributes.push_back(ColumnAttribute(ColumnAttribute::INT));
     HeapTable table("__test_btree", column_names, column_attributes);
+    std::cout << "heaptable create" << std::endl;
+
     table.create();
+    std::cout << "after heaptable create" << std::endl;
+
     ValueDict row1, row2;
     row1["a"] = Value(12);
     row1["b"] = Value(99);
@@ -165,14 +192,18 @@ bool test_btree() {
     column_names.clear();
     column_names.push_back("a");
     BTreeIndex index(table, "fooindex", column_names, true);
-    index.create();
-    return true;  // FIXME
+    std::cout << "index create" << std::endl;
 
+    index.create();
+
+
+    std::cout << "calling lookup" << std::endl;
 
     ValueDict lookup;
     lookup["a"] = 12;
     Handles *handles = index.lookup(&lookup);
     ValueDict *result = table.project(handles->back());
+    std::cout << "after result" << std::endl;
     if (*result != row1) {
         std::cout << "first lookup failed" << std::endl;
         return false;
@@ -210,7 +241,11 @@ bool test_btree() {
             delete handles;
             delete result;
         }
+    std::cout << "before " << std::endl;
 
+
+    return true;
+    
     // test delete
     ValueDict row;
     row["a"] = 44;
