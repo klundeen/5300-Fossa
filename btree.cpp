@@ -72,25 +72,30 @@ void BTreeIndex::close() {
 // names in the index. Returns a list of row handles.
 Handles *BTreeIndex::lookup(ValueDict *key_dict) const {
   KeyValue *key_value = this->tkey(key_dict);
-
-  std:: cout << "not recursive loopup" << std::endl;
   return _lookup(root, stat->get_height(), key_value);
 }
 
+/*recursive lookup
+ * Checks if the node is a leaf then returns the handle and if the
+ * node is interior, it recursively calls _lookup()
+ */
 Handles *BTreeIndex::_lookup(BTreeNode *node, uint height, const KeyValue *key) const {
   Handles *handles = new Handles;
 
   if (height == 1){
-    
     auto *leaf = dynamic_cast<BTreeLeaf *>(node);
-    handles->push_back(leaf->find_eq(key));
-    std::cout << "return leaf" << std::endl;
-    return handles;
+    try{
+        //find_eq() throws an exception if map can't find the key
+        handles->push_back(leaf->find_eq(key));
+        return handles;
+    }catch(std::out_of_range &e){
+        return handles;
+    }
+
+
   }
-    
   else{
     auto *interior = dynamic_cast<BTreeInterior *>(node);
-    std::cout << "return interior" << std::endl;
     return _lookup(interior->find(key, height), height -1, key);
   }
 
@@ -117,7 +122,7 @@ void BTreeIndex::insert(Handle handle) {
         stat->save();
         delete root;
         root = new_root;
-        std::cout << "new root: " << *new_root << std::endl;
+        //std::cout << "new root: " << *new_root << std::endl;
     }
     delete key;
     delete tkey;
@@ -130,7 +135,9 @@ Insertion BTreeIndex::_insert(BTreeNode *node, uint height, const KeyValue *key,
         return leaf->insert(key, handle);
     } else {
         auto *interior = dynamic_cast<BTreeInterior *>(node);
-        Insertion insertion = _insert(interior->find(key, height), height - 1, key, handle);
+        auto *found = interior->find(key,height);
+        Insertion insertion = _insert(found, height - 1, key, handle);
+        delete found;
         if (!BTreeNode::insertion_is_none(insertion))
             insertion = interior->insert(&insertion.second, insertion.first);
         return insertion;
@@ -163,7 +170,7 @@ void BTreeIndex::build_key_profile() {
 }
 
 bool test_btree() {
-  std::cout << "test start" << std::endl;
+
   ColumnNames column_names;
     column_names.push_back("a");
     column_names.push_back("b");
@@ -171,10 +178,9 @@ bool test_btree() {
     column_attributes.push_back(ColumnAttribute(ColumnAttribute::INT));
     column_attributes.push_back(ColumnAttribute(ColumnAttribute::INT));
     HeapTable table("__test_btree", column_names, column_attributes);
-    std::cout << "heaptable create" << std::endl;
 
     table.create();
-    std::cout << "after heaptable create" << std::endl;
+
 
     ValueDict row1, row2;
     row1["a"] = Value(12);
@@ -183,7 +189,7 @@ bool test_btree() {
     row2["b"] = Value(101);
     table.insert(&row1);
     table.insert(&row2);
-    for (int i = 0; i < 100 * 1000; i++) {
+    for (int i = 0; i < 1000; i++) {
         ValueDict row;
         row["a"] = Value(i + 100);
         row["b"] = Value(-i);
@@ -192,24 +198,21 @@ bool test_btree() {
     column_names.clear();
     column_names.push_back("a");
     BTreeIndex index(table, "fooindex", column_names, true);
-    std::cout << "index create" << std::endl;
 
     index.create();
-
-
-    std::cout << "calling lookup" << std::endl;
 
     ValueDict lookup;
     lookup["a"] = 12;
     Handles *handles = index.lookup(&lookup);
     ValueDict *result = table.project(handles->back());
-    std::cout << "after result" << std::endl;
+
     if (*result != row1) {
         std::cout << "first lookup failed" << std::endl;
         return false;
     }
     delete handles;
     delete result;
+
     lookup["a"] = 88;
     handles = index.lookup(&lookup);
     result = table.project(handles->back());
@@ -219,7 +222,9 @@ bool test_btree() {
     }
     delete handles;
     delete result;
+
     lookup["a"] = 6;
+
     handles = index.lookup(&lookup);
     if (handles->size() != 0) {
         std::cout << "third lookup failed" << std::endl;
@@ -241,10 +246,8 @@ bool test_btree() {
             delete handles;
             delete result;
         }
-    std::cout << "before " << std::endl;
 
-
-    return true;
+    return true;  //for now we are only testing insert & lookup
     
     // test delete
     ValueDict row;

@@ -19,4 +19,27 @@ To run the program:
 ./sql5300 ~/cpsc5300/data
 ```
 
+### To run Milestone 6:
+On CS1:
+```
+cd cpsc5300
+rm -f data/*
+cd 5300-Fossa
+git checkout tags/Milestone6 
+make
+```
+To run the program:
+```
+./sql5300 ~/cpsc5300/data
+```
 
+
+Test runs for lookup:
+
+Note: We need to delete the content of 'data' directory before running the second 'create index fxx on foo(id)' statement to work.
+Follow the steps:
+```
+cd cpsc5300
+rm -f data/*
+```
+Then continue running the remaining statements.
