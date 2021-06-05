@@ -36,10 +36,10 @@ To run the program:
 
 Test runs for lookup:
 
-Note: We need to delete the content of 'data' directory before running the second 'create index fxx on foo(id)' statement to work.
+Note: We need to delete the content 'foo-fxx.db' in 'data' directory before running the second 'create index fxx on foo(id)' statement to work.
 Follow the steps:
 ```
 cd cpsc5300
-rm -f data/*
+rm -f foo-fxx.db
 ```
 Then continue running the remaining statements.
