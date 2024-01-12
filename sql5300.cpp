@@ -1,9 +1,6 @@
 #include "SQLParser.h"
-#include "SQLParserResult.h"
-#include "db_cxx.h"
-#include "sql/Expr.h"
-#include "sql/SQLStatement.h"
 #include <cstddef>
+#include <db_cxx.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
