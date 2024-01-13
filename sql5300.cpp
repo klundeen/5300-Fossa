@@ -1,14 +1,14 @@
-#include "SQLParser.h"
+#include "Execute.h"
+#include <SQLParser.h>
 #include <cstddef>
 #include <db_cxx.h>
+#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <string>
 
 using hsql::SQLParser;
 using hsql::SQLParserResult;
-using hsql::SQLStatement;
 
 const char *DB_NAME = "cs5300.db";
 const unsigned int BLOCK_SZ = 4096;
@@ -38,32 +38,6 @@ void openDB(Db &db, DbEnv &env) {
   db.set_re_len(BLOCK_SZ); // Set record length to 4K
   db.open(NULL, DB_NAME, NULL, DB_RECNO, DB_CREATE,
           0644); // Erases anything already there
-}
-
-std::string executeSelect(const hsql::SelectStatement &select) {
-  std::string builder = "SELECT";
-  for (hsql::Expr *expr : *select.selectList) {
-    builder = builder + ' ' + expr->name;
-  }
-  return builder;
-}
-
-std::string execute(SQLParserResult *tree) {
-  std::string builder;
-  for (size_t i = 0; i < tree->size(); i++) {
-    const SQLStatement *statement = tree->getStatement(i);
-    switch (statement->type()) {
-    case hsql::kStmtSelect:
-      builder += executeSelect(*((hsql::SelectStatement *)statement));
-      break;
-    case hsql::kStmtCreate:
-      break;
-    default:
-      break;
-    }
-  }
-
-  return builder;
 }
 
 void sqlShell(Db &db) {
