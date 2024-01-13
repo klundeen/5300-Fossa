@@ -7,7 +7,10 @@
 #include "not_impl.h"
 #include <SQLParser.h>
 #include <cstddef>
+#include <cstring>
 #include <db_cxx.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -58,19 +61,27 @@ void openDBEnv(DbEnv &env, std::string &envdir) {
  * @param db     DB to open shell for
  */
 void sqlShell(void) {
+  char *buf; // Buffer for readline
   std::string input;
-  while (true) {
-    std::cout << "SQL> " << std::flush;
-    std::getline(std::cin, input); // Get input
+  // By default readline binds tab to autocomplete, which we dont implement.
+  // This rebinds it back to tab.
+  rl_bind_key('\t', rl_insert);
+
+  while ((buf = readline("SQL> ")) != nullptr) {
+    // Skip if line is blank
+    if (strlen(buf) == 0) {
+      continue;
+    }
+
+    add_history(buf);
+
+    // Switch from readline buffer to a c++ string
+    input = std::string(buf);
+    delete[] buf;
 
     // If we ^d break the loop
     if (std::cin.eof()) {
       break;
-    }
-
-    // If we read a blank line then prompt again
-    if (input.length() == 0) {
-      continue;
     }
 
     // BEGIN: SHELL COMMANDS //
