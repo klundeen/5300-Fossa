@@ -3,7 +3,7 @@ CC       := $(CXX) # Ensures that linking is done with c++ libs
 CPPFLAGS  = -I/usr/local/db6/include -Iinclude -Wall -Wextra -Wpedantic
 CXXFLAGS  = -DHAVE_CXX_STDHEADERS -D_GNU_SOURCE -D_REENTRANT -O2 -std=c++17
 LDFLAGS  += -L/usr/local/db6/lib
-LDLIBS    = -ldb_cxx -lsqlparser
+LDLIBS    = -ldb_cxx -lsqlparser -lreadline
 
 SRC_DIR  := src
 TEST_DIR := test
