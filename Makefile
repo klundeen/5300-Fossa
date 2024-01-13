@@ -9,7 +9,7 @@ all: sql5300
 
 # make will automatically assumes x.cpp -> x.o and x.o -> x
 # when x needs more then just x.cpp add the .o files here
-sql5300: sql5300.o
+sql5300: sql5300.o Execute.o
 
 .PHONY: clean
 clean:
