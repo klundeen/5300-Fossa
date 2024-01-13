@@ -59,9 +59,18 @@ void sqlShell(Db &db) {
     SQLParserResult *result = SQLParser::parseSQLString(input);
 
     if (result->isValid()) {
-      std::cout << execute(result) << '\n';
+      try {
+        std::cout << Execute::execute(result) << '\n';
+      } catch (std::logic_error &e) {
+        std::cerr << e.what() << '\n';
+      }
     } else {
       std::cerr << result->errorMsg() << '\n';
+      std::cerr << input << '\n';
+      for (int i = 0; i < result->errorColumn() - 1; i++) {
+        std::cerr << '.';
+      }
+      std::cerr << "^ Here\n";
     }
 
     delete result;
