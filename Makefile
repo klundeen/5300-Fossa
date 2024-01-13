@@ -9,6 +9,11 @@ SRC_DIR := src
 .PHONY: all
 all: sql5300
 
+# Must run `make clean` first if source has not changed.
+.PHONY: debug
+debug: CXXFLAGS = -DHAVE_CXX_STDHEADERS -D_GNU_SOURCE -D_REENTRANT -g -std=c++11 -I/usr/local/db6/include
+debug: all
+
 # make will automatically assumes x.cpp -> x.o and x.o -> x
 # when x needs more then just x.cpp add the .o files here
 sql5300: sql5300.o Execute.o
