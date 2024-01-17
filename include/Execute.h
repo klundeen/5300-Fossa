@@ -4,8 +4,15 @@
 #ifndef EXECUTE_H_
 #define EXECUTE_H_
 
+/**
+ * Static class that contains execute function and helpers
+ */
 class Execute {
 public:
+  /**
+   * Executes a given parse tree
+   * @param tree      A SQL parse tree root
+   */
   static std::string execute(const hsql::SQLParserResult *tree);
   static std::string create(const hsql::CreateStatement *create);
   static std::string select(const hsql::SelectStatement *select);
