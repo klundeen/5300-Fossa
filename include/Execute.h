@@ -14,6 +14,9 @@ public:
    * @param tree      A SQL parse tree root
    */
   static std::string execute(const hsql::SQLParserResult *tree);
+
+protected:
+  // Protect these classes because they are only called in execute
   static std::string create(const hsql::CreateStatement *create);
   static std::string select(const hsql::SelectStatement *select);
   static std::string expr(const hsql::Expr *expr);
