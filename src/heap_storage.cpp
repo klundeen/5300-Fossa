@@ -1,4 +1,5 @@
 #include "heap_storage.h"
+#include "not_impl.h"
 #include "storage_engine.h"
 #include <cstring>
 
@@ -31,15 +32,19 @@ RecordID SlottedPage::add(const Dbt *data) {
   return id;
 }
 
-Dbt *SlottedPage::get(RecordID record_id) {}
+Dbt *SlottedPage::get(RecordID record_id) { throw NotImplementedError(); }
 
-void SlottedPage::put(RecordID record_id, const Dbt &data) {}
+void SlottedPage::put(RecordID record_id, const Dbt &data) {
+  throw NotImplementedError();
+}
 
-void SlottedPage::del(RecordID record_id) {}
+void SlottedPage::del(RecordID record_id) { throw NotImplementedError(); }
 
-RecordIDs *SlottedPage::ids() {}
+RecordIDs *SlottedPage::ids() { throw NotImplementedError(); }
 
-void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id) {}
+void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id) {
+  throw NotImplementedError();
+}
 
 // Store the size and offset for given id. For id of zero, store the block
 // header.
@@ -52,9 +57,11 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
   put_n(4 * id + 2, loc);
 }
 
-bool SlottedPage::has_room(u_int16_t size) {}
+bool SlottedPage::has_room(u_int16_t size) { throw NotImplementedError(); }
 
-void SlottedPage::slide(u_int16_t start, u_int16_t end) {}
+void SlottedPage::slide(u_int16_t start, u_int16_t end) {
+  throw NotImplementedError();
+}
 
 // Get 2-byte integer at given offset in block.
 u16 SlottedPage::get_n(u16 offset) { return *(u16 *)this->address(offset); }
@@ -73,13 +80,13 @@ void *SlottedPage::address(u16 offset) {
 
 // BEGIN: HeapFile //
 
-void HeapFile::create(void) {}
+void HeapFile::create(void) { throw NotImplementedError(); }
 
-void HeapFile::drop(void) {}
+void HeapFile::drop(void) { throw NotImplementedError(); }
 
-void HeapFile::open(void) {}
+void HeapFile::open(void) { throw NotImplementedError(); }
 
-void HeapFile::close(void) {}
+void HeapFile::close(void) { throw NotImplementedError(); }
 
 // Allocate a new block for the database file.
 // Returns the new empty DbBlock that is managing the records in this block and
@@ -101,13 +108,13 @@ SlottedPage *HeapFile::get_new(void) {
   return page;
 }
 
-SlottedPage *HeapFile::get(BlockID block_id) {}
+SlottedPage *HeapFile::get(BlockID block_id) { throw NotImplementedError(); }
 
-void HeapFile::put(DbBlock *block) {}
+void HeapFile::put(DbBlock *block) { throw NotImplementedError(); }
 
-BlockIDs *HeapFile::block_ids() {}
+BlockIDs *HeapFile::block_ids() { throw NotImplementedError(); }
 
-void HeapFile::db_open(uint flags) {}
+void HeapFile::db_open(uint flags) { throw NotImplementedError(); }
 
 // END  : HeapFile //
 
@@ -115,25 +122,29 @@ void HeapFile::db_open(uint flags) {}
 
 HeapTable::HeapTable(Identifier table_name, ColumnNames column_names,
                      ColumnAttributes column_attributes)
-    : DbRelation(table_name, column_names, column_attributes), file("TODO") {}
+    : DbRelation(table_name, column_names, column_attributes), file("TODO") {
+  throw NotImplementedError();
+}
 
-void HeapTable::create() {}
+void HeapTable::create() { throw NotImplementedError(); }
 
-void HeapTable::create_if_not_exists() {}
+void HeapTable::create_if_not_exists() { throw NotImplementedError(); }
 
-void HeapTable::drop() {}
+void HeapTable::drop() { throw NotImplementedError(); }
 
-void HeapTable::open() {}
+void HeapTable::open() { throw NotImplementedError(); }
 
-void HeapTable::close() {}
+void HeapTable::close() { throw NotImplementedError(); }
 
-Handle HeapTable::insert(const ValueDict *row) {}
+Handle HeapTable::insert(const ValueDict *row) { throw NotImplementedError(); }
 
-void HeapTable::update(const Handle handle, const ValueDict *new_values) {}
+void HeapTable::update(const Handle handle, const ValueDict *new_values) {
+  throw NotImplementedError();
+}
 
-void HeapTable::del(const Handle handle) {}
+void HeapTable::del(const Handle handle) { throw NotImplementedError(); }
 
-Handles *HeapTable::select() {}
+Handles *HeapTable::select() { throw NotImplementedError(); }
 
 Handles *HeapTable::select(const ValueDict *where) {
   Handles *handles = new Handles();
@@ -150,13 +161,17 @@ Handles *HeapTable::select(const ValueDict *where) {
   return handles;
 }
 
-ValueDict *HeapTable::project(Handle handle) {}
+ValueDict *HeapTable::project(Handle handle) { throw NotImplementedError(); }
 
-ValueDict *HeapTable::project(Handle handle, const ColumnNames *column_names) {}
+ValueDict *HeapTable::project(Handle handle, const ColumnNames *column_names) {
+  throw NotImplementedError();
+}
 
-ValueDict *HeapTable::validate(const ValueDict *row) {}
+ValueDict *HeapTable::validate(const ValueDict *row) {
+  throw NotImplementedError();
+}
 
-Handle HeapTable::append(const ValueDict *row) {}
+Handle HeapTable::append(const ValueDict *row) { throw NotImplementedError(); }
 
 // return the bits to go into the file
 // caller responsible for freeing the returned Dbt and its enclosed
@@ -191,6 +206,6 @@ Dbt *HeapTable::marshal(const ValueDict *row) {
   return data;
 }
 
-ValueDict *HeapTable::unmarshal(Dbt *data) {}
+ValueDict *HeapTable::unmarshal(Dbt *data) { throw NotImplementedError(); }
 
 // END  : HeapTable //
