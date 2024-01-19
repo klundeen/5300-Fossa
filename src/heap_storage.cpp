@@ -4,6 +4,7 @@
 #include <cstring>
 
 typedef u_int16_t u16;
+typedef u_int32_t u32;
 
 // BEGIN: SlottedPage //
 
@@ -53,15 +54,13 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
     size = this->num_records;
     loc = this->end_free;
   }
-  put_n(4 * id, size);
-  put_n(4 * id + 2, loc);
+  put_n(2 * sizeof(u16) * id, size);
+  put_n(2 * sizeof(u16) * id + 2, loc);
 }
 
-bool SlottedPage::has_room(u_int16_t size) { throw NotImplementedError(); }
+bool SlottedPage::has_room(u16 size) { throw NotImplementedError(); }
 
-void SlottedPage::slide(u_int16_t start, u_int16_t end) {
-  throw NotImplementedError();
-}
+void SlottedPage::slide(u16 start, u16 end) { throw NotImplementedError(); }
 
 // Get 2-byte integer at given offset in block.
 u16 SlottedPage::get_n(u16 offset) { return *(u16 *)this->address(offset); }
@@ -122,7 +121,8 @@ void HeapFile::db_open(uint flags) { throw NotImplementedError(); }
 
 HeapTable::HeapTable(Identifier table_name, ColumnNames column_names,
                      ColumnAttributes column_attributes)
-    : DbRelation(table_name, column_names, column_attributes), file("TODO") {
+    : DbRelation(table_name, column_names, column_attributes),
+      file(table_name) {
   throw NotImplementedError();
 }
 
