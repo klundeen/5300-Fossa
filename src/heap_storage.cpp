@@ -33,7 +33,11 @@ RecordID SlottedPage::add(const Dbt *data) {
   return id;
 }
 
-Dbt *SlottedPage::get(RecordID record_id) { throw NotImplementedError(); }
+Dbt *SlottedPage::get(RecordID record_id) {
+  u16 size, loc;
+  this->get_header(size, loc, record_id);
+  return loc == 0 ? nullptr : new Dbt(address(loc), size);
+}
 
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
   throw NotImplementedError();
@@ -43,8 +47,9 @@ void SlottedPage::del(RecordID record_id) { throw NotImplementedError(); }
 
 RecordIDs *SlottedPage::ids() { throw NotImplementedError(); }
 
-void SlottedPage::get_header(u_int16_t &size, u_int16_t &loc, RecordID id) {
-  throw NotImplementedError();
+void SlottedPage::get_header(u16 &size, u16 &loc, RecordID id) {
+  size = get_n(2 * sizeof(u16) * id);
+  loc = get_n(2 * sizeof(u16) * id + sizeof(u16));
 }
 
 // Store the size and offset for given id. For id of zero, store the block
