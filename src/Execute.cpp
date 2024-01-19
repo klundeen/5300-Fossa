@@ -1,7 +1,7 @@
 #include "Execute.h"
+#include "not_impl.h"
 #include <ios>
 #include <sstream>
-#include <stdexcept>
 
 std::string Execute::execute(const hsql::SQLParserResult *tree) {
   std::stringstream builder;
@@ -15,7 +15,7 @@ std::string Execute::execute(const hsql::SQLParserResult *tree) {
       builder << Execute::select((const hsql::SelectStatement *)statement);
       break;
     default:
-      throw std::logic_error("Not yet implemented");
+      throw NotImplementedError("Unknown statement");
       break;
     }
   }
@@ -51,7 +51,7 @@ std::string Execute::create(const hsql::CreateStatement *create) {
     builder << ')';
     break;
   default:
-    throw std::logic_error("Not yet implemented");
+    throw NotImplementedError("Unknown create statement");
     break;
   }
   return builder.str();
@@ -84,7 +84,7 @@ std::string Execute::join(const hsql::JoinDefinition *join) {
     builder << " JOIN ";
     break;
   default:
-    throw std::logic_error("Not yet implemented");
+    throw NotImplementedError("Unknown join statement");
     break;
   }
   builder << Execute::table(join->right) << " ON "
@@ -113,7 +113,7 @@ std::string Execute::table(const hsql::TableRef *table) {
     builder << ' ';                        // Write over the comma
     break;
   default:
-    throw std::logic_error("Not yet implemented");
+    throw NotImplementedError("Unknown table type");
     break;
   }
   return builder.str();
@@ -143,7 +143,7 @@ std::string Execute::expr(const hsql::Expr *expr) {
     builder << expr->ival;
     break;
   default:
-    throw std::logic_error("Not yet implemented");
+    throw NotImplementedError("Unknown expr type");
     break;
   }
   return builder.str();

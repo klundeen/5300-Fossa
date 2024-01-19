@@ -4,10 +4,10 @@
  */
 #include "Execute.h"
 #include "heap_storage.h"
+#include "not_impl.h"
 #include <SQLParser.h>
 #include <cstddef>
 #include <db_cxx.h>
-#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -104,7 +104,7 @@ void sqlShell(Db &db) {
     if (result->isValid()) {
       try {
         std::cout << Execute::execute(result) << '\n';
-      } catch (std::logic_error &e) {
+      } catch (NotImplementedError &e) {
         std::cerr << e.what() << '\n';
       }
     } else {
