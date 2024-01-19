@@ -3,6 +3,7 @@
  * @author Samuel Monson
  */
 #include "Execute.h"
+#include "heap_storage.h"
 #include <SQLParser.h>
 #include <cstddef>
 #include <db_cxx.h>
@@ -13,6 +14,9 @@
 
 using hsql::SQLParser;
 using hsql::SQLParserResult;
+
+// Global handler for DbEnv
+DbEnv *_DB_ENV;
 
 const char *DB_NAME = "cs5300.db";
 const unsigned int BLOCK_SZ = 4096;
@@ -73,8 +77,8 @@ void sqlShell(Db &db) {
     std::cout << "SQL> " << std::flush;
     std::getline(std::cin, input); // Get input
 
-    // If we ^d or type quit then break the loop
-    if (std::cin.eof() || input == QUIT) {
+    // If we ^d break the loop
+    if (std::cin.eof()) {
       break;
     }
 
@@ -82,6 +86,18 @@ void sqlShell(Db &db) {
     if (input.length() == 0) {
       continue;
     }
+
+    // BEGIN: SHELL COMMANDS //
+    if (input == QUIT) {
+      break;
+    } else if (input == "test") {
+      bool tester = test_heap_storage();
+      std::cout << "test_heap_storage: " << (tester ? "ok" : "failed")
+                << std::endl;
+      continue;
+    }
+
+    // END:   SHELL COMMANDS //
 
     SQLParserResult *result = SQLParser::parseSQLString(input);
 
@@ -114,6 +130,7 @@ int main(int argc, char *argv[]) {
 
   DbEnv env(0U);
   openDBEnv(env, envdir);
+  _DB_ENV = &env;
 
   Db db(&env, 0);
   openDB(db, env);
