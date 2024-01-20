@@ -78,7 +78,10 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
   put_n(2 * sizeof(u16) * id + 2, loc);
 }
 
-bool SlottedPage::has_room(u16 size) { throw NotImplementedError(); }
+bool SlottedPage::has_room(u16 size) {
+  u16 space = this->end_free - (this->num_records + 1) * sizeof(u16) * 2;
+  return space >= size;
+}
 
 void SlottedPage::slide(u16 start, u16 end) { throw NotImplementedError(); }
 
