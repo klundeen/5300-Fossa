@@ -43,7 +43,22 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
   throw NotImplementedError();
 }
 
-void SlottedPage::del(RecordID record_id) { throw NotImplementedError(); }
+// FIXME: This is probably wrong
+void SlottedPage::del(RecordID record_id) {
+  u16 size, loc;
+  get_header(size, loc, record_id);
+  if (loc != 0) {
+    put_header(record_id, 0, 0);
+    memmove(this->address(this->end_free + size), this->address(this->end_free),
+            loc - this->end_free);
+    this->end_free += size;
+    for (RecordID i = record_id + 1; i < this->num_records; i++) {
+      u16 s, l;
+      get_header(s, l, i);
+      put_header(i, s, l + size);
+    }
+  }
+}
 
 RecordIDs *SlottedPage::ids() { throw NotImplementedError(); }
 
