@@ -2,6 +2,7 @@
 #include "not_impl.h"
 #include "storage_engine.h"
 #include <cstring>
+#include <string>
 
 typedef u_int16_t u16;
 typedef u_int32_t u32;
@@ -139,13 +140,23 @@ void *SlottedPage::address(u16 offset) {
 
 // BEGIN: HeapFile //
 
-void HeapFile::create(void) { throw NotImplementedError(); }
+void HeapFile::create(void) {
+  db_open(DB_CREATE | DB_EXCL);
+  SlottedPage *first_block = get_new();
+  put(first_block);
+}
 
-void HeapFile::drop(void) { throw NotImplementedError(); }
+void HeapFile::drop(void) {
+  this->close();
+  std::remove(this->dbfilename.c_str());
+}
 
-void HeapFile::open(void) { throw NotImplementedError(); }
+void HeapFile::open(void) { db_open(); }
 
-void HeapFile::close(void) { throw NotImplementedError(); }
+void HeapFile::close(void) {
+  this->db.close(0U);
+  this->closed = true;
+}
 
 // Allocate a new block for the database file.
 // Returns the new empty DbBlock that is managing the records in this block and
@@ -173,7 +184,22 @@ void HeapFile::put(DbBlock *block) { throw NotImplementedError(); }
 
 BlockIDs *HeapFile::block_ids() { throw NotImplementedError(); }
 
-void HeapFile::db_open(uint flags) { throw NotImplementedError(); }
+void HeapFile::db_open(uint flags) {
+  this->db.set_message_stream(_DB_ENV->get_message_stream());
+  this->db.set_error_stream(_DB_ENV->get_error_stream());
+  this->db.set_re_len(DbBlock::BLOCK_SZ); // Set record length to 4K
+  db.open(nullptr, this->name.c_str(), nullptr, DB_RECNO, flags, 0644);
+
+  const char *filename, *dbname;
+  this->db.get_dbname(&filename, &dbname);
+  this->dbfilename = std::string(filename);
+
+  DB_BTREE_STAT stat;
+  this->db.stat(nullptr, &stat, DB_FAST_STAT);
+  this->last = stat.bt_ndata;
+
+  this->closed = false;
+}
 
 // END  : HeapFile //
 

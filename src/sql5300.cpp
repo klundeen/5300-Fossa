@@ -19,7 +19,6 @@ using hsql::SQLParserResult;
 DbEnv *_DB_ENV;
 
 const char *DB_NAME = "cs5300.db";
-const unsigned int BLOCK_SZ = 4096;
 const std::string QUIT = "quit";
 
 /**
@@ -55,23 +54,10 @@ void openDBEnv(DbEnv &env, std::string &envdir) {
 }
 
 /**
- * Open a db in the given dbenv
- * @param db     Handler to write db to
- * @param env    Handler for an existing dbenv
- */
-void openDB(Db &db, DbEnv &env) {
-  db.set_message_stream(env.get_message_stream());
-  db.set_error_stream(env.get_error_stream());
-  db.set_re_len(BLOCK_SZ); // Set record length to 4K
-  db.open(NULL, DB_NAME, NULL, DB_RECNO, DB_CREATE,
-          0644); // Erases anything already there
-}
-
-/**
  * Spawns a SQL shell in the given DB
  * @param db     DB to open shell for
  */
-void sqlShell(Db &db) {
+void sqlShell(void) {
   std::string input;
   while (true) {
     std::cout << "SQL> " << std::flush;
@@ -132,10 +118,7 @@ int main(int argc, char *argv[]) {
   openDBEnv(env, envdir);
   _DB_ENV = &env;
 
-  Db db(&env, 0);
-  openDB(db, env);
-
-  sqlShell(db);
+  sqlShell();
 
   return EXIT_SUCCESS;
 }
