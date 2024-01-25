@@ -1,6 +1,7 @@
 #include "heap_storage.h"
 #include "not_impl.h"
 #include "storage_engine.h"
+#include <cstddef>
 #include <cstring>
 #include <string>
 
@@ -173,16 +174,32 @@ SlottedPage *HeapFile::get_new(void) {
   // memory
   SlottedPage *page = new SlottedPage(data, this->last, true);
   this->db.put(nullptr, &key, &data,
-               0); // write it out with initialization applied
-  this->db.get(nullptr, &key, &data, 0);
+               0U); // write it out with initialization applied
+  this->db.get(nullptr, &key, &data, 0U);
   return page;
 }
 
-SlottedPage *HeapFile::get(BlockID block_id) { throw NotImplementedError(); }
+SlottedPage *HeapFile::get(BlockID block_id) {
+  Dbt key(&block_id, sizeof(block_id)), block;
+  this->db.get(nullptr, &key, &block, 0U);
+  SlottedPage *page = new SlottedPage(block, block_id);
+  return page;
+}
 
-void HeapFile::put(DbBlock *block) { throw NotImplementedError(); }
+void HeapFile::put(DbBlock *block) {
+  BlockID block_id = block->get_block_id();
+  Dbt key(&block_id, sizeof(block_id));
+  this->db.put(nullptr, &key, block->get_block(), 0U);
+}
 
-BlockIDs *HeapFile::block_ids() { throw NotImplementedError(); }
+BlockIDs *HeapFile::block_ids() {
+  BlockIDs *ids = new BlockIDs();
+  ids->reserve(this->last);
+  for (u32 i = 1; i <= this->last; i++) {
+    ids->emplace_back(i);
+  }
+  return ids;
+}
 
 void HeapFile::db_open(uint flags) {
   this->db.set_message_stream(_DB_ENV->get_message_stream());
