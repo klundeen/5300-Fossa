@@ -40,27 +40,42 @@ Dbt *SlottedPage::get(RecordID record_id) {
 }
 
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
-  throw NotImplementedError();
+  u16 size, loc;
+  get_header(size, loc, record_id);
+  u16 new_size = data.get_size();
+  if (new_size > size) {
+    u16 extra = new_size - size;
+    if (!has_room(extra))
+      throw DbBlockNoRoomError("not enough room for new record");
+    slide(loc + new_size, loc + size);
+    memcpy(this->address(loc - extra), data.get_data(), new_size);
+  } else {
+    memcpy(this->address(loc), data.get_data(), new_size);
+    slide(loc + new_size, loc + size);
+  }
+  get_header(size, loc, record_id);
+  put_header(record_id, size, loc);
 }
 
-// FIXME: This is probably wrong
 void SlottedPage::del(RecordID record_id) {
   u16 size, loc;
   get_header(size, loc, record_id);
-  if (loc != 0) {
-    put_header(record_id, 0, 0);
-    memmove(this->address(this->end_free + size), this->address(this->end_free),
-            loc - this->end_free);
-    this->end_free += size;
-    for (RecordID i = record_id + 1; i < this->num_records; i++) {
-      u16 s, l;
-      get_header(s, l, i);
-      put_header(i, s, l + size);
-    }
-  }
+  put_header(record_id, 0, 0);
+  slide(loc, loc + size);
 }
 
-RecordIDs *SlottedPage::ids() { throw NotImplementedError(); }
+RecordIDs *SlottedPage::ids() {
+  RecordIDs *records = new RecordIDs();
+  records->reserve(this->num_records);
+  for (u16 i = 1; i <= this->num_records; i++) {
+    u16 size, loc;
+    get_header(size, loc, i);
+    if (loc != 0) {
+      records->emplace_back(i);
+    }
+  }
+  return records;
+}
 
 void SlottedPage::get_header(u16 &size, u16 &loc, RecordID id) {
   size = get_n(2 * sizeof(u16) * id);
@@ -83,7 +98,29 @@ bool SlottedPage::has_room(u16 size) {
   return space >= size;
 }
 
-void SlottedPage::slide(u16 start, u16 end) { throw NotImplementedError(); }
+void SlottedPage::slide(u16 start, u16 end) {
+  u16 shift = end - start;
+  if (shift == 0)
+    return;
+
+  // Memmove should be safer for overlap
+  memmove(address(this->end_free + 1 + shift), address(this->end_free + 1),
+          shift);
+
+  RecordIDs *records = this->ids();
+  for (RecordID &it : *records) {
+    u16 size, loc;
+    get_header(size, loc, it);
+    if (loc <= start) {
+      loc += shift;
+      put_header(it, size, loc);
+    }
+  }
+  this->end_free += shift;
+  put_header();
+
+  delete records;
+}
 
 // Get 2-byte integer at given offset in block.
 u16 SlottedPage::get_n(u16 offset) { return *(u16 *)this->address(offset); }
