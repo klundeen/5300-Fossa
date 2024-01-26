@@ -50,7 +50,7 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
     u16 extra = new_size - size;
     if (!has_room(extra))
       throw DbBlockNoRoomError("not enough room for new record");
-    slide(loc + new_size, loc + size);
+    slide(loc, loc - extra);
     memcpy(this->address(loc - extra), data.get_data(), new_size);
   } else {
     memcpy(this->address(loc), data.get_data(), new_size);
