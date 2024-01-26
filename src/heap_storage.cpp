@@ -232,10 +232,10 @@ void HeapTable::create() { this->file.create(); }
 
 void HeapTable::create_if_not_exists() {
   try {
-    this->file.open();
+    this->open();
   } catch (const DbException &) {
     // TODO: Narrow exception catching
-    this->file.create();
+    this->create();
   }
 }
 
