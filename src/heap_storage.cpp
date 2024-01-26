@@ -3,6 +3,7 @@
 #include "storage_engine.h"
 #include <cstddef>
 #include <cstring>
+#include <db_cxx.h>
 #include <string>
 
 typedef u_int16_t u16;
@@ -225,19 +226,24 @@ void HeapFile::db_open(uint flags) {
 HeapTable::HeapTable(Identifier table_name, ColumnNames column_names,
                      ColumnAttributes column_attributes)
     : DbRelation(table_name, column_names, column_attributes),
-      file(table_name) {
-  throw NotImplementedError();
+      file(table_name) {}
+
+void HeapTable::create() { this->file.create(); }
+
+void HeapTable::create_if_not_exists() {
+  try {
+    this->file.open();
+  } catch (const DbException &) {
+    // TODO: Narrow exception catching
+    this->file.create();
+  }
 }
 
-void HeapTable::create() { throw NotImplementedError(); }
+void HeapTable::drop() { this->file.drop(); }
 
-void HeapTable::create_if_not_exists() { throw NotImplementedError(); }
+void HeapTable::open() { this->file.open(); }
 
-void HeapTable::drop() { throw NotImplementedError(); }
-
-void HeapTable::open() { throw NotImplementedError(); }
-
-void HeapTable::close() { throw NotImplementedError(); }
+void HeapTable::close() { this->file.close(); }
 
 Handle HeapTable::insert(const ValueDict *row) { throw NotImplementedError(); }
 
