@@ -206,11 +206,13 @@ void HeapFile::db_open(uint flags) {
   this->db.set_message_stream(_DB_ENV->get_message_stream());
   this->db.set_error_stream(_DB_ENV->get_error_stream());
   this->db.set_re_len(DbBlock::BLOCK_SZ); // Set record length to 4K
-  db.open(nullptr, this->name.c_str(), nullptr, DB_RECNO, flags, 0644);
+  db.open(nullptr, (this->name + ".db").c_str(), nullptr, DB_RECNO, flags,
+          0644);
 
   const char *filename, *dbname;
   this->db.get_dbname(&filename, &dbname);
-  this->dbfilename = std::string(filename);
+  _DB_ENV->get_home(&dbname); // We dont need dbname so reuse it.
+  this->dbfilename = std::string(dbname) + '/' + std::string(filename);
 
   DB_BTREE_STAT stat;
   this->db.stat(nullptr, &stat, DB_FAST_STAT);
