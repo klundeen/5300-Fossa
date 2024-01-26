@@ -2,9 +2,11 @@
 #include "not_impl.h"
 #include "storage_engine.h"
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <db_cxx.h>
 #include <string>
+#include <utility>
 
 typedef u_int16_t u16;
 typedef u_int32_t u32;
@@ -247,7 +249,7 @@ void HeapTable::open() { this->file.open(); }
 
 void HeapTable::close() { this->file.close(); }
 
-Handle HeapTable::insert(const ValueDict *row) { throw NotImplementedError(); }
+Handle HeapTable::insert(const ValueDict *row) { return append(validate(row)); }
 
 void HeapTable::update(const Handle handle, const ValueDict *new_values) {
   throw NotImplementedError();
@@ -255,9 +257,7 @@ void HeapTable::update(const Handle handle, const ValueDict *new_values) {
 
 void HeapTable::del(const Handle handle) { throw NotImplementedError(); }
 
-Handles *HeapTable::select() { throw NotImplementedError(); }
-
-Handles *HeapTable::select(const ValueDict *where) {
+Handles *HeapTable::select() {
   Handles *handles = new Handles();
   BlockIDs *block_ids = file.block_ids();
   for (auto const &block_id : *block_ids) {
@@ -272,17 +272,59 @@ Handles *HeapTable::select(const ValueDict *where) {
   return handles;
 }
 
-ValueDict *HeapTable::project(Handle handle) { throw NotImplementedError(); }
+Handles *HeapTable::select(const ValueDict *where) {
+  throw NotImplementedError();
+}
+
+ValueDict *HeapTable::project(Handle handle) {
+  SlottedPage *block = this->file.get(handle.first);
+  Dbt *data = block->get(handle.second);
+  ValueDict *row = unmarshal(data);
+  delete data;
+  return row;
+}
 
 ValueDict *HeapTable::project(Handle handle, const ColumnNames *column_names) {
-  throw NotImplementedError();
+  ValueDict *result = new ValueDict();
+  ValueDict *row = project(handle);
+  for (auto const &it : *column_names) {
+    result->insert(row->extract(it));
+  }
+  delete row;
+  return result;
 }
 
 ValueDict *HeapTable::validate(const ValueDict *row) {
-  throw NotImplementedError();
+  ValueDict *new_row = new ValueDict();
+  for (Identifier const &it : this->column_names) {
+    auto const &elm = row->find(it);
+    if (elm == row->end()) {
+      throw DbRelationError("Row missing fields");
+    }
+    new_row->emplace(std::make_pair(it, elm->second));
+  }
+  return new_row;
 }
 
-Handle HeapTable::append(const ValueDict *row) { throw NotImplementedError(); }
+Handle HeapTable::append(const ValueDict *row) {
+  Dbt *data = marshal(row);
+  SlottedPage *block = this->file.get(this->file.get_last_block_id());
+  RecordID id;
+  try {
+    id = block->add(data);
+  } catch (const DbBlockNoRoomError &) {
+    delete block;
+    block = this->file.get_new();
+    id = block->add(data);
+  }
+  this->file.put(block);
+
+  Handle h(block->get_block_id(), id);
+
+  delete block;
+  delete data;
+  return h;
+}
 
 // return the bits to go into the file
 // caller responsible for freeing the returned Dbt and its enclosed
@@ -317,6 +359,34 @@ Dbt *HeapTable::marshal(const ValueDict *row) {
   return data;
 }
 
-ValueDict *HeapTable::unmarshal(Dbt *data) { throw NotImplementedError(); }
+ValueDict *HeapTable::unmarshal(Dbt *data) {
+  ValueDict *values = new ValueDict();
+  char *bytes = (char *)data->get_data();
+  uint offset = 0;
+  u16 size;
+  std::string text;
+  for (size_t i = 0; i < this->column_names.size(); i++) {
+    switch (this->column_attributes[i].get_data_type()) {
+    case ColumnAttribute::DataType::INT:
+      values->emplace(std::make_pair(this->column_names[i],
+                                     Value(*(int32_t *)(bytes + offset))));
+      offset += sizeof(int32_t);
+      break;
+    case ColumnAttribute::DataType::TEXT:
+      size = *(u16 *)(bytes + offset);
+      offset += sizeof(u16);
+      text = std::string(bytes + offset, size);
+      offset += size;
+      values->emplace(std::make_pair(this->column_names[i], Value(text)));
+      break;
+    default:
+      throw NotImplementedError();
+      break;
+    }
+  }
+  // TODO: Add nessasary frees
+  // delete[] bytes;
+  return values;
+}
 
 // END  : HeapTable //
