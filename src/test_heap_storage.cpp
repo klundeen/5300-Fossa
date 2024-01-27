@@ -57,7 +57,9 @@ bool test_heap_storage() {
   handles = table3.select();
   std::cout << "ok " << handles->size() << std::endl;
 
-  table.drop();
+  table3.drop();
 
+  delete handles;
+  delete result;
   return true;
 }
