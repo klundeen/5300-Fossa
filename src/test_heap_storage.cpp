@@ -10,33 +10,53 @@ bool test_heap_storage() {
   column_attributes.push_back(ca);
   ca.set_data_type(ColumnAttribute::TEXT);
   column_attributes.push_back(ca);
+
+  std::cout << "create " << std::flush;
   HeapTable table1("_test_create_drop_cpp", column_names, column_attributes);
   table1.create();
-  std::cout << "create ok" << std::endl;
+  std::cout << "ok" << std::endl;
+
+  std::cout << "drop " << std::flush;
   table1.drop(); // drop makes the object unusable because of BerkeleyDB
                  // restriction -- maybe want to fix this some day
-  std::cout << "drop ok" << std::endl;
+  std::cout << "ok" << std::endl;
 
+  std::cout << "create_if_not_exists " << std::flush;
   HeapTable table("_test_data_cpp", column_names, column_attributes);
   table.create_if_not_exists();
-  std::cout << "create_if_not_exsts ok" << std::endl;
+  std::cout << "ok" << std::endl;
 
   ValueDict row;
   row["a"] = Value(12);
   row["b"] = Value("Hello!");
-  std::cout << "try insert" << std::endl;
+  std::cout << "insert " << std::flush;
   table.insert(&row);
-  std::cout << "insert ok" << std::endl;
+  std::cout << "ok" << std::endl;
+
+  std::cout << "select " << std::flush;
   Handles *handles = table.select();
-  std::cout << "select ok " << handles->size() << std::endl;
+  std::cout << "ok " << handles->size() << std::endl;
+
+  std::cout << "project " << std::flush;
   ValueDict *result = table.project((*handles)[0]);
-  std::cout << "project ok" << std::endl;
   Value value = (*result)["a"];
   if (value.n != 12)
     return false;
   value = (*result)["b"];
   if (value.s != "Hello!")
     return false;
+  std::cout << "ok" << std::endl;
+
+  std::cout << "close " << std::flush;
+  table.close();
+  std::cout << "ok" << std::endl;
+
+  HeapTable table3("_test_data_cpp", column_names, column_attributes);
+  std::cout << "open" << std::flush;
+  table3.open();
+  handles = table3.select();
+  std::cout << "ok " << handles->size() << std::endl;
+
   table.drop();
 
   return true;
