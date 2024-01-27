@@ -25,6 +25,8 @@
  *
  */
 class SlottedPage : public DbBlock {
+  friend class SlottedPageTest;
+
 public:
   SlottedPage(Dbt &block, BlockID block_id, bool is_new = false);
 
