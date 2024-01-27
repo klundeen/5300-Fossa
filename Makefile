@@ -17,8 +17,8 @@ debug: CXXFLAGS = -DHAVE_CXX_STDHEADERS -D_GNU_SOURCE -D_REENTRANT -g -std=c++17
 debug: all
 
 .PHONY: check
-check: LDLIBS += -lgtest -lgtest_main
-check: heap_storage.o heap_storage.test.o db_mocks.test.o
+check: LDLIBS += -lpthread -lgtest -lgtest_main
+check: heap_storage.o heap_storage.test.o
 check:
 	$(CC) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o run_tests
 	./run_tests
