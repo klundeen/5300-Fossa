@@ -148,6 +148,7 @@ void HeapFile::create(void) {
   db_open(DB_CREATE | DB_EXCL);
   SlottedPage *first_block = get_new();
   put(first_block);
+  delete first_block;
 }
 
 void HeapFile::drop(void) {
@@ -170,7 +171,7 @@ SlottedPage *HeapFile::get_new(void) {
   std::memset(block, 0, sizeof(block));
   Dbt data(block, sizeof(block));
 
-  int block_id = ++this->last;
+  u32 block_id = ++(this->last);
   Dbt key(&block_id, sizeof(block_id));
 
   // write out an empty block and read it back in so Berkeley DB is managing the
@@ -255,7 +256,12 @@ void HeapTable::open() { this->file.open(); }
 
 void HeapTable::close() { this->file.close(); }
 
-Handle HeapTable::insert(const ValueDict *row) { return append(validate(row)); }
+Handle HeapTable::insert(const ValueDict *row) {
+  ValueDict *validated = validate(row);
+  Handle added = append(validated);
+  delete validated;
+  return added;
+}
 
 void HeapTable::update(const Handle handle, const ValueDict *new_values) {
   throw NotImplementedError();
@@ -287,6 +293,7 @@ ValueDict *HeapTable::project(Handle handle) {
   Dbt *data = block->get(handle.second);
   ValueDict *row = unmarshal(data);
   delete data;
+  delete block;
   return row;
 }
 
@@ -327,6 +334,8 @@ Handle HeapTable::append(const ValueDict *row) {
 
   Handle h(block->get_block_id(), id);
 
+  char *bytes = (char *)data->get_data();
+  delete[] bytes;
   delete block;
   delete data;
   return h;
@@ -390,8 +399,6 @@ ValueDict *HeapTable::unmarshal(Dbt *data) {
       break;
     }
   }
-  // TODO: Add nessasary frees
-  // delete[] bytes;
   return values;
 }
 
