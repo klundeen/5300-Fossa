@@ -1,6 +1,9 @@
 #include "heap_storage.h"
 #include "storage_engine.h"
+#include "gmock/gmock.h"
+#include <cstring>
 #include <gtest/gtest.h>
+#include <string>
 
 DbEnv *_DB_ENV; // TODO: Mock when needed
 
@@ -52,6 +55,121 @@ TEST_F(SlottedPageTest, ConstructFirstBlock) {
   page = new SlottedPage(wrapper, 0, true);
   ASSERT_EQ(addrBufFrom(0), get_num_records());
   ASSERT_EQ(addrBufFrom(sizeof(u_int16_t)), get_end_free());
+}
+
+/**
+ * @tests SlottedPage::add
+ */
+TEST_F(SlottedPageTest, AddTestMem) {
+  page = new SlottedPage(wrapper, 0, true);
+  std::string field_a("ABCDEFGHIJKLM");
+  std::string field_b("NOPQRSTUVWXYZ");
+
+  std::string expected = field_b + field_a;
+
+  Dbt f_1(field_a.data(), field_a.length());
+  Dbt f_2(field_b.data(), field_b.length());
+
+  page->add(&f_1);
+  page->add(&f_2);
+
+  // Check that memory is as expected
+  ASSERT_THAT(std::string(&buf[DbBlock::BLOCK_SZ - expected.length()],
+                          expected.length()),
+              expected);
+}
+
+/**
+ * @tests SlottedPage::get
+ */
+TEST_F(SlottedPageTest, GetField) {
+  page = new SlottedPage(wrapper, 0, true);
+  std::string field_a("ABCDEFGHIJKLM");
+  std::string field_b("NOPQRSTUVWXYZ");
+
+  Dbt f_1(field_a.data(), field_a.length());
+  Dbt f_2(field_b.data(), field_b.length());
+
+  RecordID p_1 = page->add(&f_1);
+  RecordID p_2 = page->add(&f_2);
+
+  Dbt *get_1 = page->get(p_1);
+
+  ASSERT_THAT(std::string((char *)get_1->get_data(), get_1->get_size()),
+              field_a);
+
+  Dbt *get_2 = page->get(p_2);
+
+  ASSERT_THAT(std::string((char *)get_2->get_data(), get_2->get_size()),
+              field_b);
+
+  delete get_1;
+  delete get_2;
+}
+
+/**
+ * @tests SlottedPage::put
+ */
+TEST_F(SlottedPageTest, PutAddHole) {
+  page = new SlottedPage(wrapper, 0, true);
+  std::string mem_a("ABCDEFGHIJKLM");
+  std::string mem_b("0000000000000");
+  std::string mem_c("NOPQRSTUVWXYZ");
+
+  std::string value = mem_c + mem_a;
+  std::string expected = mem_c + mem_b + mem_a;
+
+  Dbt f_1(mem_a.data(), mem_a.length());
+  Dbt f_2(mem_b.data(), mem_b.length());
+  Dbt f_3(mem_c.data(), mem_c.length());
+  Dbt f_b(nullptr, 0);
+
+  page->add(&f_1);
+  RecordID p_2 = page->add(&f_b);
+  page->add(&f_3);
+
+  // Check that memory is as expected
+  ASSERT_THAT(
+      std::string(&buf[DbBlock::BLOCK_SZ - value.length()], value.length()),
+      value);
+
+  page->put(p_2, f_2);
+
+  ASSERT_THAT(std::string(&buf[DbBlock::BLOCK_SZ - expected.length()],
+                          expected.length()),
+              expected);
+}
+
+/**
+ * @tests SlottedPage::del
+ */
+TEST_F(SlottedPageTest, DelCloseHole) {
+  page = new SlottedPage(wrapper, 0, true);
+  std::string mem_a("ABCDEFGHIJKLM");
+  std::string mem_b("0000000000000");
+  std::string mem_c("NOPQRSTUVWXYZ");
+
+  std::string value = mem_c + mem_b + mem_a;
+  std::string expected = mem_c + mem_a;
+
+  Dbt f_1(mem_a.data(), mem_a.length());
+  Dbt f_2(mem_b.data(), mem_b.length());
+  Dbt f_3(mem_c.data(), mem_c.length());
+
+  page->add(&f_1);
+  RecordID p_2 = page->add(&f_2);
+  page->add(&f_3);
+
+  // Check that memory is as expected
+  ASSERT_THAT(
+      std::string(&buf[DbBlock::BLOCK_SZ - value.length()], value.length()),
+      value);
+
+  page->del(p_2);
+
+  ASSERT_THAT(std::string(&buf[DbBlock::BLOCK_SZ - expected.length()],
+                          expected.length()),
+              expected);
 }
 
 /**
