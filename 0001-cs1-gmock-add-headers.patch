@@ -1,0 +1,12 @@
+diff --git a/Makefile b/Makefile
+index 22ea4f6..c63aa95 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,6 +1,6 @@
+ CXX      ?= g++
+ CC       := $(CXX) # Ensures that linking is done with c++ libs
+-CPPFLAGS  = -I/usr/local/db6/include -Iinclude -Wall -Wextra -Wpedantic
++CPPFLAGS  = -I/usr/local/db6/include -Iinclude -Ithirdparty/include -Wall -Wextra -Wpedantic
+ CXXFLAGS  = -DHAVE_CXX_STDHEADERS -D_GNU_SOURCE -D_REENTRANT -O2 -std=c++17
+ LDFLAGS  += -L/usr/local/db6/lib
+ LDLIBS    = -ldb_cxx -lsqlparser

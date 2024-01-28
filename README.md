@@ -41,6 +41,15 @@ Unit tests can be built and run with:
 make check
 ```
 
+NOTE: CS1 is missing the headers for gmock and will thus fail to build. I have included the headers in this repo but due to CS1's version of gmock being old they are not built with by default. Use the following to patch the makefile:
+
+``` sh
+# Apply patch
+git apply 0001-cs1-gmock-add-headers.patch
+# Run tests
+make check
+```
+
 The builtin action tester can be run from the sql shell:
 
 ``` sh
