@@ -3,6 +3,7 @@
 #include "storage_engine.h"
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <db_cxx.h>
 #include <string>
@@ -104,13 +105,13 @@ bool SlottedPage::has_room(u16 size) {
 }
 
 void SlottedPage::slide(u16 start, u16 end) {
-  u16 shift = end - start;
+  int shift = end - start;
   if (shift == 0)
     return;
 
+  u16 block_start = this->end_free + 1;
   // Memmove should be safer for overlap
-  memmove(address(this->end_free + 1 + shift), address(this->end_free + 1),
-          shift);
+  memmove(address(block_start + shift), address(block_start), abs(shift));
 
   RecordIDs *records = this->ids();
   for (RecordID &it : *records) {
