@@ -146,6 +146,8 @@ void *SlottedPage::address(u16 offset) {
 // BEGIN: HeapFile //
 
 void HeapFile::create(void) {
+  if (!closed)
+    throw DbException("Cannot create an open file");
   db_open(DB_CREATE | DB_EXCL);
   SlottedPage *first_block = get_new();
   put(first_block);
@@ -157,10 +159,14 @@ void HeapFile::drop(void) {
   std::remove(this->dbfilename.c_str());
 }
 
-void HeapFile::open(void) { db_open(); }
+void HeapFile::open(void) {
+  if (closed)
+    db_open();
+}
 
 void HeapFile::close(void) {
-  this->db.close(0U);
+  if (!closed)
+    this->db.close(0U);
   this->closed = true;
 }
 
