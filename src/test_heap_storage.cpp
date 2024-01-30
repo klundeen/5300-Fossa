@@ -50,16 +50,17 @@ bool test_heap_storage() {
   std::cout << "close " << std::flush;
   table.close();
   std::cout << "ok" << std::endl;
+  delete handles;
+  delete result;
 
   HeapTable table3("_test_data_cpp", column_names, column_attributes);
-  std::cout << "open" << std::flush;
+  std::cout << "open " << std::flush;
   table3.open();
   handles = table3.select();
   std::cout << "ok " << handles->size() << std::endl;
+  delete handles;
 
   table3.drop();
 
-  delete handles;
-  delete result;
   return true;
 }
