@@ -224,12 +224,13 @@ void HeapFile::db_open(uint flags) {
   _DB_ENV->get_home(&dbname); // We dont need dbname so reuse it.
   this->dbfilename = std::string(dbname) + '/' + std::string(filename);
 
-  // FIXME: This still results in a massive last block for opening files
   // If the create flag is set then assume blank file.
   if ((flags & DB_CREATE) == 0U) {
-    DB_BTREE_STAT stat;
+    DB_BTREE_STAT *stat;
     this->db.stat(nullptr, &stat, DB_FAST_STAT);
-    this->last = stat.bt_ndata;
+    auto ndata = stat->bt_ndata;
+    free(stat);
+    this->last = ndata;
   } else {
     this->last = 0;
   }
