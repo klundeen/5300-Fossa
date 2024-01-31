@@ -80,6 +80,22 @@ TEST_F(SlottedPageTest, AddTestMem) {
 }
 
 /**
+ * @tests SlottedPage::add
+ */
+TEST_F(SlottedPageTest, AddToFullPage) {
+  page = new SlottedPage(wrapper, 0, true);
+  const size_t field_a_len = DbBlock::BLOCK_SZ - sizeof(u_int16_t) * 2 * 2 - 1;
+  char field_a[field_a_len];
+  std::string field_b("A");
+
+  Dbt f_1(&field_a, field_a_len);
+  Dbt f_2(field_b.data(), field_b.length());
+
+  ASSERT_NO_THROW(page->add(&f_1));
+  ASSERT_THROW(page->add(&f_2), DbBlockNoRoomError);
+}
+
+/**
  * @tests SlottedPage::get
  */
 TEST_F(SlottedPageTest, GetField) {
@@ -198,4 +214,31 @@ TEST_F(SlottedPageTest, GetNFromBuffer) {
 
     ASSERT_EQ(wrap_get_n(testParams[i][0]), testParams[i][1]);
   }
+}
+
+/**
+ * @tests SlottedPage::has_room
+ */
+TEST_F(SlottedPageTest, HasRoom) {
+  page = new SlottedPage(wrapper, 0, true);
+
+  // Check that the page has room for a record of size 0
+  ASSERT_TRUE(wrap_has_room(0));
+
+  // Check that the page has room for a record of that fills the entire free
+  // space
+  ASSERT_TRUE(wrap_has_room(DbBlock::BLOCK_SZ - sizeof(u_int16_t) * 2 - 1));
+
+  // Boundary check
+  ASSERT_FALSE(wrap_has_room(DbBlock::BLOCK_SZ - sizeof(u_int16_t) * 2));
+
+  // Simulate a 5 records with total size BLOCK_SZ/2
+  set_num_records(5);
+  set_end_free(DbBlock::BLOCK_SZ - DbBlock::BLOCK_SZ / 2 - 1);
+
+  ASSERT_TRUE(
+      wrap_has_room(DbBlock::BLOCK_SZ / 2 - sizeof(u_int16_t) * 2 * 6 - 1));
+
+  ASSERT_FALSE(
+      wrap_has_room(DbBlock::BLOCK_SZ / 2 - sizeof(u_int16_t) * 2 * 6));
 }

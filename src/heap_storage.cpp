@@ -27,7 +27,7 @@ SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new)
 
 // Add a new record to the block. Return its id.
 RecordID SlottedPage::add(const Dbt *data) {
-  if (!has_room(data->get_size()))
+  if (!has_room(data->get_size() + sizeof(u16) * 2))
     throw DbBlockNoRoomError("not enough room for new record");
   u16 id = ++this->num_records;
   u16 size = (u16)data->get_size();
