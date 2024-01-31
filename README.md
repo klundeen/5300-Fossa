@@ -60,3 +60,4 @@ SQL> test
 ## Tags
 
 - `Milestone1`: Initial parser support that simply prints back parsed SQL syntax.
+- `Milestone2`: Adds SlottedPage, Heap storage, and related tests.
